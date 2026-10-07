@@ -1,5 +1,9 @@
 # Interactive MAM103X
 
+![alt text](<Screenshot 2026-10-16 at 14.27.11.png>)
+
+![alt text](<Screenshot 2026-10-16 at 14.27.00.png>)
+
 One Cloudflare Worker that serves every project under `schmebb.com/Interactive`.
 
 ```
