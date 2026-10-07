@@ -70,7 +70,7 @@ h1 { font: 800 clamp(1.9rem, 5vw, 2.6rem)/1.1 var(--f-mono); letter-spacing: -0.
 .card.violet { --c: #ab9ce4; }
 .card.blue   { --c: #6da0da; }
 .card.rust   { --c: #a86e60; }
-.card.clay   { --c: #b5573d; }
+.card.clay   { --c: #e0cf6b; }
 .card.green  { --c: #2f7a52; }
 .card.light_green  { --c: #62bb8b; }
 .card .icon { grid-area: icon; width: 56px; height: 56px; padding: 8px; border-radius: 14px; background: var(--sand); border: 1px solid var(--edge); }
@@ -82,6 +82,27 @@ h1 { font: 800 clamp(1.9rem, 5vw, 2.6rem)/1.1 var(--f-mono); letter-spacing: -0.
 .card .open { grid-area: open; font: 700 1.05rem/1 var(--f-mono); color: var(--c); display: inline-flex; gap: 10px; align-items: center; white-space: nowrap; }
 .card:hover .open span { transform: translateX(3px); }
 .card .open span { transition: transform 0.15s ease; }
+/* cards that aren't ready yet */
+.card.soon {
+  position: relative;
+  background: #ece5d6;
+  border-color: #ddd2bc;
+  border-top-color: color-mix(in srgb, var(--c) 40%, #cbbfa6);
+  
+}
+.card.soon:hover { transform: none; box-shadow: none; }
+.card.soon .icon,
+.card.soon h2,
+.card.soon p { opacity: 0.5; }
+.card .badge {
+  position: absolute; top: 14px; right: 16px;
+  font: 700 0.72rem/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); background: var(--cream);
+  border: 1px solid var(--edge); border-radius: 999px; padding: 6px 10px;
+}
+@media (max-width: 520px) {
+  .card.soon { padding-top: 48px; }
+}
 
 .empty { text-align: center; color: var(--muted); font: 500 1rem var(--f-mono); padding: 40px 0; }
 footer { margin-top: 56px; text-align: center; font: 700 1.4rem/1 var(--f-script); color: #5a4d3f; }
@@ -160,6 +181,23 @@ footer { margin-top: 56px; text-align: center; font: 700 1.4rem/1 var(--f-script
         <span class="open">open <span>→</span></span>
       </a>
     </li>
+    <li>
+  <div class="card clay soon" aria-disabled="true">
+    <span class="badge">Coming soon</span>
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 40 40">
+        <path d="M6 32L32 10" stroke-dasharray="2 3" opacity="0.55"/>
+        <path d="M6 32L22 26"/>
+        <path d="M18.4 30.6L22 26L16.3 24.9"/>
+        <path d="M22 26L32 10"/>
+        <path d="M31.9 15.8L32 10L26.8 12.7"/>
+        <circle class="fill" cx="6" cy="32" r="2.2"/>
+      </svg>
+    </span>
+    <h2>Vector Manipulation</h2>
+    <p>Add, subtract and scale vectors, and work out dot and cross products step by step. Interactive diagrams with normals, direction and angles</p>
+  </div>
+</li>
     
   </ul>
   <p class="empty" id="empty" hidden>No projects match that.</p>
@@ -192,5 +230,6 @@ footer { margin-top: 56px; text-align: center; font: 700 1.4rem/1 var(--f-script
   update();
 })();
 </script>
+<script defer src="/Interactive/track.js"></script>
 </body>
 </html>

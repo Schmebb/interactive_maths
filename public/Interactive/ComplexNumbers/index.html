@@ -68,6 +68,8 @@ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);verti
 th{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--ink-2)}
 code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;background:var(--soft);padding:2px 5px;border-radius:4px;white-space:nowrap}
 .katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+a.back{font-family:var(--sans);font-size:15px;color:var(--z);text-decoration:none;display:inline-block;margin:0 0 16px}
+a.back:hover{text-decoration:underline}
 nav.toc{font-family:var(--sans);font-size:15px;display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 8px}
 nav.toc a{color:var(--z);text-decoration:none}
 nav.toc a:hover{text-decoration:underline}
@@ -110,6 +112,8 @@ svg .zlbl{fill:var(--z);font-family:var(--sans);font-size:12px;font-weight:600}
 <body>
 <main>
 
+<a class="back" href="/Interactive/">← All MAM103X projects</a>
+
 <h1>Exponential equations on the Argand diagram</h1>
 <p class="lede">Question 9, parts (a) to (g). Drag the blue point, watch where it lands, then read how each answer is worked out.</p>
 <nav class="toc" aria-label="Sections">
@@ -122,7 +126,7 @@ svg .zlbl{fill:var(--z);font-family:var(--sans);font-size:12px;font-weight:600}
 
   <div class="ctrl">
     <label class="ctrl-label" for="zin">z =</label>
-    <input id="zin" type="text" value="1 + i" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="zhelp">
+    <input id="zin" type="text" value="-3i - sqrt(3)" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="zhelp">
     <span class="note" id="zhelp">accepts <code>-2</code>, <code>1-i</code>, <code>sqrt(2)+3i</code>, <code>2e^(i pi/3)</code></span>
   </div>
   <div class="err" id="perr" aria-live="polite"></div>
@@ -518,15 +522,77 @@ const ascii=v=>{let t=(Math.abs(v)<5e-7?0:v).toFixed(3).replace(/\.?0+$/,"");ret
 const asciiC=w=>ascii(w.re)+(w.im<0?" - ":" + ")+ascii(Math.abs(w.im))+"i";
 const SUB="₀₁₂₃₄₅₆₇₈₉";
 const sub=k=>String(k).split("").map(c=>c==="-"?"₋":(SUB["0123456789".indexOf(c)]||c)).join("");
-function piFrac(t){
-  const ds=[1,2,3,4,6,8,12];
-  for(let j=0;j<ds.length;j++){const d=ds[j],num=t*d/P;
-    if(Math.abs(num-Math.round(num))<1e-9){const m=Math.round(num);
-      if(m===0)return "0";
-      const sg=m<0?"−":"",a=Math.abs(m),top=(a===1?"π":a+"π");
-      return sg+(d===1?top:top+"/"+d);}}
+
+/* exact values: everything is left as a fraction, a surd or a multiple of pi
+   whenever one exists, and only falls back to decimals when none does.      */
+const SQF=[2,3,5,6,7,10,11,13,14,15,17,19,21,22,23,26,29,30,31,33,34,35,37,38,39,41,42,43,
+  46,47,51,53,55,57,58,59,61,62,65,66,67,69,70,71,73,74,77,78,79,82,83,85,86,87,89,91,93,94,95,97];
+function gcd(x,y){x=Math.abs(x);y=Math.abs(y);while(y){const t=x%y;x=y;y=t;}return x||1;}
+/* v = s * (p/q) * sqrt(c), with c = 1 for a plain fraction; null if there is no such form */
+function surd(v){
+  if(!isFinite(v))return null;
+  if(Math.abs(v)<1e-12)return {p:0,q:1,c:1,s:1};
+  const s=v<0?-1:1,a=Math.abs(v);
+  for(let q=1;q<=24;q++){const x=a*q;
+    if(Math.abs(x-Math.round(x))<1e-9*Math.max(1,x)&&Math.round(x)<=100000){
+      const m=Math.round(x),g=gcd(m,q);return {p:m/g,q:q/g,c:1,s:s};}}
+  for(let j=0;j<SQF.length;j++){const c=SQF[j],rt=Math.sqrt(c);
+    for(let q=1;q<=12;q++){const x=a*q/rt;const m=Math.round(x);
+      if(m>=1&&m<=400&&Math.abs(x-m)<1e-9*Math.max(1,x)){
+        const g=gcd(m,q);return {p:m/g,q:q/g,c:c,s:s};}}}
   return null;
 }
+function surdText(u){
+  if(!u)return null;
+  if(u.p===0)return "0";
+  const sg=u.s<0?"−":"",top=(u.c===1?String(u.p):(u.p===1?"√"+u.c:u.p+"√"+u.c));
+  return sg+(u.q===1?top:top+"/"+u.q);
+}
+function surdTex(u){
+  if(!u)return null;
+  if(u.p===0)return "0";
+  const sg=u.s<0?"-":"",rad=(u.c===1?"":"\\sqrt{"+u.c+"}"),
+        top=(u.c===1?String(u.p):(u.p===1?rad:u.p+rad));
+  return sg+(u.q===1?top:"\\frac{"+top+"}{"+u.q+"}");
+}
+const exT=(v,d)=>{const t=surdText(surd(v));return t!==null?t:f(v,d===undefined?4:d);};
+const exL=(v,d)=>{const t=surdTex(surd(v));return t!==null?t:fl(v,d===undefined?4:d);};
+/* multiples of pi */
+function piU(t){if(Math.abs(t)<1e-12)return {p:0,q:1,c:1,s:1};const u=surd(t/P);return (u&&u.c===1)?u:null;}
+function piText(t){const u=piU(t);if(!u)return null;if(u.p===0)return "0";
+  const sg=u.s<0?"−":"",top=(u.p===1?"π":u.p+"π");
+  return sg+(u.q===1?top:top+"/"+u.q);}
+function piTex(t){const u=piU(t);if(!u)return null;if(u.p===0)return "0";
+  const sg=u.s<0?"-":"",top=(u.p===1?"\\pi":u.p+"\\pi");
+  return sg+(u.q===1?top:"\\frac{"+top+"}{"+u.q+"}");}
+/* glue a real and an imaginary piece, each already a string that may start with a minus */
+function joinRI(re,im,MINUS,IU){
+  let neg=false,t=im;
+  if(t.charAt(0)===MINUS||t.charAt(0)==="-"){neg=true;t=t.slice(1);}
+  if(t==="0"||/^0(\.0*)?$/.test(t))return re;
+  const ip=(t==="1"?IU:(t.indexOf("/")>=0?"("+t+")"+IU:t+IU));
+  if(re==="0"||/^0(\.0*)?$/.test(re))return (neg?MINUS:"")+ip;
+  return re+(neg?" "+MINUS+" ":" + ")+ip;
+}
+const exRect=w=>joinRI(exT(w.re),exT(w.im),"−","i");
+const exRectTex=w=>joinRI(exL(w.re),exL(w.im),"-","i");
+/* exact radius of the nth roots, and exact ln|z| */
+const RADCH={2:"\u221a",3:"\u221b",4:"\u221c"};
+function rootRadText(r,n){const u=surd(Math.pow(r,1/n));if(u)return surdText(u);
+  const v=surd(r);if(!v)return f(Math.pow(r,1/n),4);
+  const t=surdText(v), wrap=(t.indexOf("/")>=0?"("+t+")":t);
+  return RADCH[n]?RADCH[n]+wrap:"("+t+")^(1/"+n+")";}
+function rootRadTex(r,n){const u=surd(Math.pow(r,1/n));if(u)return surdTex(u);
+  const v=surd(r);return v?"\\sqrt["+n+"]{"+surdTex(v)+"}":fl(Math.pow(r,1/n),4);}
+function lnText(r){if(Math.abs(r-1)<1e-12)return "0";const u=surd(r);
+  return u?"ln("+surdText(u)+")":f(Math.log(r),4);}
+function lnTex(r){if(Math.abs(r-1)<1e-12)return "0";const u=surd(r);
+  if(!u)return fl(Math.log(r),4);
+  return (u.q===1&&u.c===1)?"\\ln "+surdTex(u):"\\ln\\left("+surdTex(u)+"\\right)";}
+function degText(t){const u=surd(t*180/P);const x=surdText(u);return (x!==null?x:f(t*180/P,2))+"\u00b0";}
+function argText(t){const x=piText(t);return x!==null?x:f(t,4)+" rad";}
+function argPlain(t){const x=piText(t);return x!==null?x:f(t,4);}
+function argTex(t){const x=piTex(t);return x!==null?x:fl(t,4);}
 
 /* drawing */
 function mk(svg,name,at,cls){const e=document.createElementNS(NS,name);
@@ -555,7 +621,7 @@ function axes(svg,R){
 }
 
 /* state */
-let z=C(1,1),mode="root",n=3,sel=0,LR=2,drag=false;
+let z=C(-Math.sqrt(3),-3),mode="root",n=3,sel=0,LR=2,drag=false;
 const el=id=>document.getElementById(id);
 const PL=el("PL"),PR=el("PR"),zin=el("zin");
 
@@ -616,7 +682,7 @@ function draw(){
     });
   }
   el("ptitle").textContent = mode==="root"
-    ? (r? "Solutions of w^"+n+" = z: "+n+" of them, evenly spaced on a circle of radius |z|^(1/"+n+")"
+    ? (r? "Solutions of w^"+n+" = z: "+n+" of them, evenly spaced on a circle of radius "+rootRadText(r,n)
         : "Solutions of w^"+n+" = 0: just w = 0")
     : (r? "Solutions of e^w = z: a vertical column, spacing 2π, shown for k = −2 … 2"
         : "e^w is never 0, so there is nothing to plot");
@@ -625,34 +691,45 @@ function draw(){
   if(mode==="root"){
     const klist = n<=5 ? Array.apply(null,{length:n}).map(function(v,i){return i;}).join(",")
                        : "0,1,\\dots,"+(n-1);
+    const R=rootRadTex(r,n), th=argTex(a),
+          coef=(R==="1"?"":R+"\\,"),
+          ua=piU(a),
+          expo=(th==="0"? "\\frac{2\\pi k}{"+n+"}"
+               : ua? "\\frac{\\left("+(ua.s*ua.p)+" + "+(2*ua.q)+"k\\right)\\pi}{"+(ua.q*n)+"}"
+                   : "\\frac{"+th+" + 2\\pi k}{"+n+"}");
     tex(el("peq"), r
-      ? "w^{"+n+"} = "+texC(z)+" \\quad\\Longrightarrow\\quad w_k = "+fl(Math.pow(r,1/n),4)+
-        "\\,e^{i\\left("+fl(a,4)+" + 2\\pi k\\right)/"+n+"},\\quad k = "+klist
+      ? "w^{"+n+"} = "+texC(z)+" \\quad\\Longrightarrow\\quad w_k = "+coef+"e^{\\,i\\,"+expo+"},\\quad k = "+klist
       : "w^{"+n+"} = 0 \\quad\\Longrightarrow\\quad w = 0");
   }else{
-    tex(el("peq"), r? "e^{w} = "+texC(z)+" \\quad\\Longrightarrow\\quad w_k = "+fl(Math.log(r),4)+
-      " + i\\left("+fl(a,4)+" + 2\\pi k\\right),\\quad k\\in\\mathbb{Z}"
+    const th2=argTex(a), re0=lnTex(r),
+          im0=(th2==="0"? "2\\pi i k" : "i\\left("+th2+" + 2\\pi k\\right)");
+    tex(el("peq"), r? "e^{w} = "+texC(z)+" \\quad\\Longrightarrow\\quad w_k = "+
+      (re0==="0"?im0:re0+" + "+im0)+",\\quad k\\in\\mathbb{Z}"
       : "e^{w} = 0 \\quad\\text{has no solutions}");
   }
 
   /* facts about z */
-  const pf=piFrac(a);
   el("pfacts").innerHTML=
-    "<span><b>z</b> = "+rect(z)+"</span>"+
-    "<span><b>|z|</b> = "+f(r,4)+"</span>"+
-    "<span><b>arg z</b> = "+f(a,4)+" rad"+(pf?" = "+pf:"")+" = "+f(a*180/P,2)+"°</span>"+
-    "<span><b>polar</b> = "+f(r,3)+" e<sup>"+f(a,3)+"i</sup></span>"+
-    "<span><b>conjugate</b> = "+rect(C(z.re,-z.im))+"</span>"+
-    "<span><b>z²</b> = "+rect(cMul(z,z))+"</span>";
+    "<span><b>z</b> = "+exRect(z)+"</span>"+
+    "<span><b>|z|</b> = "+exT(r)+"</span>"+
+    "<span><b>arg z</b> = "+argText(a)+" = "+degText(a)+"</span>"+
+    "<span><b>polar</b> = "+exT(r)+" e<sup>"+argPlain(a)+" i</sup></span>"+
+    "<span><b>conjugate</b> = "+exRect(C(z.re,-z.im))+"</span>"+
+    "<span><b>z²</b> = "+exRect(cMul(z,z))+"</span>";
 
   /* solution chips */
   const ul=el("plist");ul.innerHTML="";
   S.forEach((q,i)=>{
     const li=document.createElement("li"),b=document.createElement("button");
-    const th=cArg(q.w),pf2=piFrac(th);
     b.setAttribute("aria-pressed",i===sel?"true":"false");
-    b.innerHTML="<span class='kk'>w"+sub(q.k)+"</span> = "+rect(q.w,4)+
-      "<span class='pol'>|w| = "+f(cAbs(q.w),3)+",  arg = "+f(th,3)+(pf2?" ("+pf2+")":"")+"</span>";
+    const main = mode==="log"
+      ? joinRI(lnText(r), (piText(q.w.im)!==null?piText(q.w.im):f(q.w.im,4)), "−","i")
+      : exRect(q.w);
+    const sublineSub = mode==="log"
+      ? "Re w = "+lnText(r)+",  Im w = "+(piText(q.w.im)!==null?piText(q.w.im):f(q.w.im,4))
+      : "|w| = "+rootRadText(r,n)+",  arg = "+argText(cArg(q.w));
+    b.innerHTML="<span class='kk'>w"+sub(q.k)+"</span> = "+main+
+      "<span class='pol'>"+sublineSub+"</span>";
     b.addEventListener("click",()=>{sel=i;draw();});
     li.appendChild(b);ul.appendChild(li);
   });
@@ -663,15 +740,10 @@ function draw(){
     const q=S[sel],got=mode==="root"?cPowN(q.w,n):cExp(q.w);
     const near=cAbs(cSub(got,z))<1e-6*Math.max(1,cAbs(z))+1e-9;
     ck.textContent=(mode==="root"?"(w"+sub(q.k)+")^"+n:"e^(w"+sub(q.k)+")")+
-      " = "+rect(got,4)+(near?"  — back to z, so it checks out.":"");
+      " = "+exRect(got)+(near?"  — back to z, so it checks out.":"");
   }else ck.textContent="";
 }
-function texC(w){
-  const re=fl(w.re,4),im=fl(Math.abs(w.im),4);
-  if(Math.abs(w.im)<5e-7)return re;
-  if(Math.abs(w.re)<5e-7)return (w.im<0?"-":"")+(im==="1"?"i":im+"i");
-  return re+(w.im<0?" - ":" + ")+(im==="1"?"i":im+"i");
-}
+function texC(w){return exRectTex(w);}
 
 /* input */
 function readInput(write){
@@ -726,6 +798,7 @@ document.addEventListener("DOMContentLoaded",()=>{el("nval").value=n;draw();});
 window.addEventListener("load",()=>{el("nval").value=n;draw();});
 })();
 </script>
+<script defer src="/Interactive/track.js"></script>
 </body>
 
 </html>

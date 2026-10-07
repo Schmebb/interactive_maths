@@ -1,12 +1,21 @@
 {
-  // Static-assets-only Worker serving everything under schmebb.com/Interactive
+  // Worker serving everything under schmebb.com/Interactive.
+  // Static files come from ./public; src/worker.js only handles /Interactive/api/* (visit stats).
   "name": "interactive-mam103x",
+  "main": "src/worker.js",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "none"
   },
+  "durable_objects": {
+    "bindings": [{ "name": "STATS", "class_name": "Stats" }]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Stats"] }
+  ],
   "routes": [
     { "pattern": "schmebb.com/Interactive*", "zone_name": "schmebb.com" }
   ]

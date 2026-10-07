@@ -1,6 +1,6 @@
 # Interactive MAM103X
 
-One Cloudflare Worker (static assets only) that serves every project under `schmebb.com/Interactive`.
+One Cloudflare Worker that serves every project under `schmebb.com/Interactive`.
 
 ```
 public/
@@ -14,6 +14,13 @@ public/
 1. Make a folder `public/Interactive/<Name>/` and copy the project's files into it. The main page must be `index.html`.
 2. If the project links to its own files with absolute paths (`/style.css`, `/app.js`), change them to relative (`style.css`, `./app.js`) so they resolve inside the folder.
 3. Add a card for it in `public/Interactive/index.html` (copy an existing `<li>`).
+4. Add `<script defer src="/Interactive/track.js"></script>` just before `</body>` so its visits show up on the admin page.
+
+## Admin stats
+`schmebb.com/Interactive/Admin` shows visits for the whole site and for each project (password-protected).
+Each page loads `/Interactive/track.js`, which reports anonymous visits to `src/worker.js`; they are stored in a
+Durable Object that `wrangler deploy` creates automatically. To change the password, put the output of
+`echo -n "newpassword" | shasum -a 256` into `ADMIN_PASSWORD_SHA256` in `src/worker.js`.
 
 ## Deploy
 ```

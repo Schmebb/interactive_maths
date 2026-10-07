@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · Interactive MAM103X</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@500;700;800&display=swap">
+<style>
+/* Same ivory look as the hub; the data is the only loud thing */
+:root {
+  --sand: #faf7ee;
+  --cream: #fffefa;
+  --edge: #ebe3d1;
+  --grid: #efe9db;
+  --ink: #2b2118;
+  --muted: #6f6355;
+  --soft: #8a7a66;
+  --series-1: #2a78d6;   /* views */
+  --series-2: #eb6834;   /* visitors */
+  --good: #2f7a52;
+  --bad: #b5573d;
+  --f-script: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--sand);
+  color: var(--ink);
+  font: 16px/1.5 var(--f-body);
+  padding: 48px 16px 80px;
+  min-height: 100vh;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; }
+
+.back { font: 700 0.85rem/1 var(--f-mono); color: var(--muted); text-decoration: none; display: inline-block; margin-bottom: 18px; }
+.back:hover { color: var(--ink); }
+.byline { font: 700 clamp(1.8rem, 5vw, 2.3rem)/1 var(--f-script); color: #5a4d3f; margin: 0 0 10px; transform: rotate(-1deg); transform-origin: left; }
+h1 { font: 800 clamp(1.6rem, 4.5vw, 2.2rem)/1.1 var(--f-mono); letter-spacing: -0.01em; margin: 0; }
+h2 { font: 700 1.05rem/1.2 var(--f-mono); margin: 0; }
+.sub { color: var(--muted); font-size: 0.9rem; margin: 4px 0 0; }
+
+.panel { background: var(--cream); border: 1px solid var(--edge); border-radius: 16px; padding: 22px 24px; min-width: 0; }
+
+/* ---------- login ---------- */
+#login { max-width: 420px; margin: 8vh auto 0; }
+#login form { margin-top: 28px; display: grid; gap: 12px; }
+#login label { font: 700 0.8rem/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+#login .row { display: flex; gap: 10px; }
+#login input {
+  flex: 1; min-width: 0; font: 500 1rem/1 var(--f-mono); color: var(--ink);
+  background: var(--cream); border: 2px solid var(--edge); border-radius: 12px; padding: 14px 16px;
+}
+#login input:focus-visible { outline: none; border-color: #c9b894; }
+.btn {
+  font: 700 0.95rem/1 var(--f-mono); background: var(--ink); color: var(--cream);
+  border: 0; border-radius: 12px; padding: 14px 20px; cursor: pointer;
+}
+.btn:disabled { opacity: 0.6; cursor: wait; }
+.btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--edge); padding: 9px 14px; font-size: 0.85rem; }
+.btn.ghost:hover { color: var(--ink); border-color: #c9b894; }
+.err { color: var(--bad); font: 500 0.9rem var(--f-mono); min-height: 1.4em; margin: 0; }
+
+/* ---------- dashboard ---------- */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 26px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.seg { display: inline-flex; background: var(--cream); border: 1px solid var(--edge); border-radius: 12px; padding: 3px; }
+.seg button { border: 0; background: none; padding: 7px 12px; border-radius: 9px; font: 700 0.8rem/1 var(--f-mono); color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+.status { font: 500 0.78rem/1 var(--f-mono); color: var(--soft); }
+
+.filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -8px 0 22px; font: 500 0.9rem var(--f-mono); color: var(--muted); }
+.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--cream); border: 0; border-radius: 999px; padding: 6px 8px 6px 14px; font: 700 0.85rem/1 var(--f-mono); cursor: pointer; }
+.chip span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.kpi { padding: 18px 20px; }
+.kpi .label { font: 700 0.72rem/1.2 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.kpi .value { font: 700 1.9rem/1.1 var(--f-body); margin-top: 8px; letter-spacing: -0.01em; }
+.kpi .delta { font: 500 0.8rem/1.3 var(--f-mono); color: var(--soft); margin-top: 6px; }
+.kpi .delta b { font-weight: 700; }
+.kpi .delta .up { color: var(--good); }
+.kpi .delta .down { color: var(--bad); }
+.kpi.hero .value { font-size: 3rem; }
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--good); margin-right: 6px; vertical-align: 2px; }
+
+.chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 18px; margin-bottom: 12px; }
+.legend { display: flex; gap: 16px; font: 500 0.82rem var(--f-mono); color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.axis text { font: 500 11px var(--f-mono); fill: var(--soft); }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--edge); stroke-width: 1; }
+.endlabel { font: 700 11px var(--f-mono); fill: var(--muted); }
+.crosshair { stroke: var(--soft); stroke-width: 1; }
+.empty-chart { color: var(--soft); font: 500 0.9rem var(--f-mono); padding: 50px 0; text-align: center; }
+
+.section-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 34px 0 14px; }
+.section-title p { margin: 0; color: var(--soft); font: 500 0.82rem var(--f-mono); }
+
+.projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.proj { text-align: left; cursor: pointer; display: grid; gap: 10px; transition: border-color 0.15s, box-shadow 0.15s; padding: 18px 20px; }
+.proj:hover { border-color: #c9b894; }
+.proj:focus-visible { outline: 3px solid var(--series-1); outline-offset: 3px; }
+.proj[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.proj .name { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.proj .name h3 { font: 700 1rem/1.2 var(--f-mono); margin: 0; }
+.proj .name a { font: 700 0.78rem var(--f-mono); color: var(--muted); text-decoration: none; white-space: nowrap; }
+.proj .name a:hover { color: var(--ink); }
+.proj .big { font: 700 1.6rem/1 var(--f-body); }
+.proj .big small { font: 500 0.8rem var(--f-mono); color: var(--muted); margin-left: 6px; }
+.share { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; }
+.share i { display: block; height: 100%; background: var(--series-1); border-radius: 3px; }
+.proj dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 0; }
+.proj dt { font: 700 0.65rem/1.2 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--soft); }
+.proj dd { margin: 2px 0 0; font: 600 0.92rem var(--f-body); font-variant-numeric: tabular-nums; }
+.proj .last { font: 500 0.75rem var(--f-mono); color: var(--soft); }
+
+.breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.rank { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.rank li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; font-size: 0.9rem; }
+.rank .n { font: 600 0.85rem var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.rank .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--grid); }
+.rank .bar i { display: block; height: 100%; border-radius: 3px; background: var(--series-1); }
+.rank .none { color: var(--soft); font: 500 0.85rem var(--f-mono); }
+
+.table-wrap { overflow-x: auto; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th { text-align: left; font: 700 0.7rem/1.2 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--soft); padding: 8px 10px; border-bottom: 1px solid var(--edge); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+
+#tip {
+  position: fixed; z-index: 10; pointer-events: none; background: var(--ink); color: var(--cream);
+  border-radius: 10px; padding: 9px 12px; font: 500 0.8rem/1.45 var(--f-mono); box-shadow: 0 10px 24px -12px rgba(40, 25, 10, 0.6);
+  min-width: 120px;
+}
+#tip b { display: block; font-weight: 700; margin-bottom: 3px; }
+#tip .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+#tip .row i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; margin-right: 6px; }
+
+.note { margin-top: 40px; color: var(--soft); font-size: 0.82rem; text-align: center; }
+
+@media (max-width: 560px) {
+  body { padding-top: 32px; }
+  .panel { padding: 18px; }
+  .kpi.hero .value { font-size: 2.3rem; }
+}
+@media (prefers-reduced-motion: reduce) { .proj { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/Interactive/">← All MAM103X projects</a>
+
+  <!-- ---------- password gate ---------- -->
+  <section id="login" class="panel" hidden>
+    <p class="byline">admin only</p>
+    <h1>Site stats</h1>
+    <form id="login-form" autocomplete="off">
+      <label for="pw">Password</label>
+      <div class="row">
+        <input id="pw" type="password" autocomplete="current-password" required autofocus>
+        <button class="btn" id="unlock" type="submit">Unlock</button>
+      </div>
+      <p class="err" id="login-err" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- ---------- dashboard ---------- -->
+  <main id="dash" hidden>
+    <div class="top">
+      <div>
+        <p class="byline">how's it going</p>
+        <h1>Interactive MAM103X stats</h1>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Time range" id="range">
+          <button type="button" data-days="1">24 hours</button>
+          <button type="button" data-days="7">7 days</button>
+          <button type="button" data-days="30">30 days</button>
+          <button type="button" data-days="90">90 days</button>
+          <button type="button" data-days="0">All time</button>
+        </div>
+        <button class="btn ghost" type="button" id="refresh">Refresh</button>
+        <button class="btn ghost" type="button" id="logout">Lock</button>
+      </div>
+    </div>
+
+    <div class="filter" id="filter">
+      <span id="filter-label">Whole site</span>
+      <button class="chip" type="button" id="clear-filter" hidden>
+        <em id="filter-name"></em><span aria-hidden="true">✕</span>
+      </button>
+      <span class="status" id="status" aria-live="polite"></span>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <section class="panel">
+      <div class="chart-head">
+        <div>
+          <h2 id="daily-title">Views per day</h2>
+          <p class="sub">A view is one page open. A visitor is one browser.</p>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--series-1)"></i>Views</span>
+          <span><i style="background:var(--series-2)"></i>Visitors</span>
+        </div>
+      </div>
+      <div class="chart" id="daily"></div>
+    </section>
+
+    <div class="section-title">
+      <h2>Projects</h2>
+      <p>Click a project to filter everything to it</p>
+    </div>
+    <div class="projects" id="projects"></div>
+
+    <div class="section-title">
+      <h2 id="breakdown-title">Where visits come from</h2>
+    </div>
+    <div class="breakdown">
+      <section class="panel"><h2>Referrers</h2><ol class="rank" id="referrers"></ol></section>
+      <section class="panel"><h2>Countries</h2><ol class="rank" id="countries"></ol></section>
+      <section class="panel"><h2>Devices</h2><ol class="rank" id="devices"></ol></section>
+      <section class="panel">
+        <h2>Time of day</h2>
+        <p class="sub">Views by hour, South African time</p>
+        <div class="chart" id="hours"></div>
+      </section>
+    </div>
+
+    <div class="section-title">
+      <h2>Latest visits</h2>
+      <p>Most recent 25</p>
+    </div>
+    <section class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>When</th><th>Page</th><th>From</th><th>Country</th><th>Device</th><th class="num">Time on page</th><th class="num">Clicks &amp; keys</th></tr></thead>
+          <tbody id="recent"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="note">Counts are anonymous: a random id per browser, no names, no IP addresses. Visits from before the tracker was added aren't included.</p>
+  </main>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEY = "mam103x_admin";
+  const NS = "http://www.w3.org/2000/svg";
+  const DAY = 86400000;
+  let password = "";
+  try { password = sessionStorage.getItem(KEY) || ""; } catch {}
+  let days = 30, project = "", data = null, timer = null;
+  try { days = +(localStorage.getItem(KEY + "_days") ?? 30); } catch {}
+
+  /* ---------- formatting ---------- */
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const num = n => Math.round(n).toLocaleString("en-US");
+  const compact = n => n >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "K" : num(n);
+  const dec = n => n >= 10 ? num(n) : n.toFixed(1);
+  const dur = s => {
+    s = Math.round(s);
+    if (!s) return "–";
+    if (s < 60) return s + "s";
+    if (s < 3600) return Math.floor(s / 60) + "m " + String(s % 60).padStart(2, "0") + "s";
+    return Math.floor(s / 3600) + "h " + String(Math.floor(s / 60) % 60).padStart(2, "0") + "m";
+  };
+  const ago = ts => {
+    const s = (Date.now() - ts) / 1000;
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.floor(s / 60) + " min ago";
+    if (s < 86400) return Math.floor(s / 3600) + " h ago";
+    if (s < 86400 * 30) return Math.floor(s / 86400) + " d ago";
+    return new Date(ts).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
+  };
+  const pageName = p => p === "Home" ? "Hub page" : p.replace(/([a-z])([A-Z])/g, "$1 $2");
+  const pageHref = p => p === "Home" ? "/Interactive/" : "/Interactive/" + encodeURIComponent(p) + "/";
+  let regions = null;
+  try { regions = new Intl.DisplayNames(["en"], { type: "region" }); } catch {}
+  const country = c => {
+    if (!c) return "Unknown";
+    if (c === "T1") return "Tor network";
+    if (c === "XX") return "Unknown";
+    const flag = /^[A-Z]{2}$/.test(c) ? String.fromCodePoint(...[...c].map(ch => 0x1f1a5 + ch.charCodeAt(0))) + " " : "";
+    let name = c;
+    try { name = regions ? regions.of(c) : c; } catch {}
+    return flag + name;
+  };
+  const dateLabel = (d, withYear) => new Date(d + "T12:00:00Z").toLocaleDateString("en-ZA", { day: "numeric", month: "short", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC" });
+  const addDay = (d, n) => new Date(Date.parse(d + "T12:00:00Z") + n * DAY).toISOString().slice(0, 10);
+  const niceMax = v => {
+    if (v <= 4) return 4;
+    const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  };
+
+  /* ---------- tooltip ---------- */
+  const tip = $("tip");
+  function showTip(html, x, y) {
+    tip.innerHTML = html;
+    tip.hidden = false;
+    const r = tip.getBoundingClientRect();
+    let left = x + 14, top = y - r.height - 12;
+    if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+    if (top < 8) top = y + 16;
+    tip.style.left = Math.max(8, left) + "px";
+    tip.style.top = top + "px";
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const tipRow = (color, label, value) =>
+    `<div class="row"><span>${color ? `<i style="background:${color}"></i>` : ""}${label}</span><span>${value}</span></div>`;
+
+  /* ---------- svg helpers ---------- */
+  const el = (name, attrs, parent) => {
+    const e = document.createElementNS(NS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  /* line chart: rows = [{label, values: {...}}], series = [{key, label, color}] */
+  function lineChart(box, rows, series, opts = {}) {
+    box.innerHTML = "";
+    const compactMode = !!opts.compact;
+    const W = box.clientWidth || 300, H = opts.height || 260;
+    const m = compactMode ? { l: 4, r: 4, t: 6, b: 6 } : { l: 44, r: 40, t: 14, b: 30 };
+    const n = rows.length;
+    const max = niceMax(Math.max(1, ...rows.flatMap(r => series.map(s => r.values[s.key] || 0))));
+    const x = i => m.l + (n === 1 ? (W - m.l - m.r) / 2 : i * (W - m.l - m.r) / (n - 1));
+    const y = v => m.t + (H - m.t - m.b) * (1 - v / max);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": opts.label || "chart" }, box);
+
+    if (!compactMode) {
+      const ax = el("g", { class: "axis" }, svg);
+      for (let k = 0; k <= 4; k++) {
+        const v = max * k / 4, yy = y(v);
+        el("line", { x1: m.l, x2: W - m.r, y1: yy, y2: yy, class: k ? "gridline" : "baseline" }, ax);
+        el("text", { x: m.l - 8, y: yy + 4, "text-anchor": "end" }, ax).textContent = compact(v);
+      }
+      const every = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - m.l - m.r) / 80))));
+      for (let i = 0; i < n; i += every) {
+        el("text", { x: x(i), y: H - 8, "text-anchor": n === 1 ? "middle" : i === 0 ? "start" : "middle" }, ax).textContent = rows[i].label;
+      }
+    } else {
+      el("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "baseline" }, svg);
+    }
+
+    series.forEach((s, si) => {
+      const color = css(s.color);
+      const pts = rows.map((r, i) => [x(i), y(r.values[s.key] || 0)]);
+      if (si === 0 && n > 1) {
+        el("path", { d: `M${pts[0][0]},${y(0)}L` + pts.map(p => p.join(",")).join("L") + `L${pts[n - 1][0]},${y(0)}Z`, fill: color, "fill-opacity": 0.1 }, svg);
+      }
+      if (n > 1) el("path", { d: "M" + pts.map(p => p.join(",")).join("L"), fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+      const last = pts[n - 1];
+      el("circle", { cx: last[0], cy: last[1], r: compactMode ? 3 : 4, fill: color, stroke: css("--cream"), "stroke-width": 2 }, svg);
+    });
+
+    // end labels, only when they don't collide
+    if (!compactMode && n) {
+      const ends = series.map(s => ({ s, v: rows[n - 1].values[s.key] || 0 })).map(e => ({ ...e, y: y(e.v) }));
+      const clash = ends.some((a, i) => ends.some((b, j) => i < j && Math.abs(a.y - b.y) < 14));
+      if (!clash) ends.forEach(e => {
+        el("text", { x: x(n - 1) + 8, y: e.y + 4, class: "endlabel" }, svg).textContent = compact(e.v);
+      });
+    }
+
+    // hover layer: crosshair + tooltip
+    const hover = el("g", { visibility: "hidden" }, svg);
+    const cross = el("line", { y1: m.t, y2: H - m.b, class: "crosshair" }, hover);
+    const dots = series.map(s => el("circle", { r: 4, fill: css(s.color), stroke: css("--cream"), "stroke-width": 2 }, hover));
+    const hit = el("rect", { x: 0, y: 0, width: W, height: H, fill: "transparent" }, svg);
+    const move = ev => {
+      const rect = svg.getBoundingClientRect();
+      const px = (ev.clientX - rect.left) * (W / rect.width);
+      const i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round((px - m.l) / ((W - m.l - m.r) / (n - 1)))));
+      const r = rows[i];
+      hover.setAttribute("visibility", "visible");
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i));
+      series.forEach((s, k) => { dots[k].setAttribute("cx", x(i)); dots[k].setAttribute("cy", y(r.values[s.key] || 0)); });
+      showTip(`<b>${esc(r.full || r.label)}</b>` + series.map(s => tipRow(css(s.color), s.label, num(r.values[s.key] || 0))).join(""), ev.clientX, ev.clientY);
+    };
+    hit.addEventListener("pointermove", move);
+    hit.addEventListener("pointerdown", move);
+    hit.addEventListener("pointerleave", () => { hover.setAttribute("visibility", "hidden"); hideTip(); });
+  }
+
+  /* column chart for the 24 hours */
+  function hourChart(box, hours) {
+    box.innerHTML = "";
+    const W = box.clientWidth || 240, H = 150, m = { l: 4, r: 4, t: 10, b: 22 };
+    const vals = Array.from({ length: 24 }, (_, h) => (hours.find(r => r.hour === h) || {}).views || 0);
+    const max = Math.max(1, ...vals);
+    const slot = (W - m.l - m.r) / 24, bw = Math.min(24, Math.max(2, slot - 2));
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": "Views by hour of day" }, box);
+    const color = css("--series-1");
+    el("line", { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, class: "baseline" }, svg);
+    const ax = el("g", { class: "axis" }, svg);
+    [0, 6, 12, 18].forEach(h => { el("text", { x: m.l + slot * h + slot / 2, y: H - 6, "text-anchor": "middle" }, ax).textContent = String(h).padStart(2, "0") + "h"; });
+    vals.forEach((v, h) => {
+      const bh = v ? Math.max(3, (H - m.t - m.b) * v / max) : 0;
+      const bx = m.l + slot * h + (slot - bw) / 2, by = H - m.b - bh, rr = Math.min(4, bw / 2, bh);
+      if (bh) el("path", { d: `M${bx},${H - m.b}V${by + rr}Q${bx},${by} ${bx + rr},${by}H${bx + bw - rr}Q${bx + bw},${by} ${bx + bw},${by + rr}V${H - m.b}Z`, fill: color }, svg);
+      const t = el("rect", { x: m.l + slot * h, y: m.t, width: slot, height: H - m.t - m.b, fill: "transparent" }, svg);
+      const show = ev => showTip(`<b>${String(h).padStart(2, "0")}:00 – ${String(h).padStart(2, "0")}:59</b>` + tipRow(color, "Views", num(v)), ev.clientX, ev.clientY);
+      t.addEventListener("pointermove", show);
+      t.addEventListener("pointerdown", show);
+      t.addEventListener("pointerleave", hideTip);
+    });
+  }
+
+  /* ---------- rendering ---------- */
+  function dayRange() {
+    const end = data.today;
+    let start = data.days ? addDay(end, -(data.days - 1)) : (data.firstDay || end);
+    const out = [];
+    for (let d = start; d <= end; d = addDay(d, 1)) out.push(d);
+    return out;
+  }
+
+  function delta(cur, prev, betterUp = true) {
+    if (!data.previous) return `<div class="delta">all time</div>`;
+    const label = data.days === 1 ? "previous 24 hours" : `previous ${data.days} days`;
+    if (!prev) return `<div class="delta">${cur ? "nothing in the" : "no change vs"} ${label}</div>`;
+    const pct = (cur - prev) / prev * 100;
+    if (Math.abs(pct) < 0.5) return `<div class="delta">no change vs ${label}</div>`;
+    const up = pct > 0, good = up === betterUp;
+    return `<div class="delta"><b class="${good ? "up" : "down"}">${up ? "▲" : "▼"} ${Math.abs(pct).toFixed(0)}%</b> vs ${label}</div>`;
+  }
+
+  function renderKpis() {
+    const t = data.totals, p = data.previous || {};
+    $("kpis").innerHTML = [
+      `<div class="panel kpi hero"><div class="label">Views</div><div class="value">${compact(t.views)}</div>${delta(t.views, p.views)}</div>`,
+      `<div class="panel kpi"><div class="label">Unique visitors</div><div class="value">${compact(t.visitors)}</div>${delta(t.visitors, p.visitors)}</div>`,
+      `<div class="panel kpi"><div class="label">Avg time on page</div><div class="value">${dur(t.avgDuration)}</div>${delta(t.avgDuration, p.avgDuration)}</div>`,
+      `<div class="panel kpi"><div class="label">Clicks &amp; keys per view</div><div class="value">${dec(t.avgInteractions)}</div>${delta(t.avgInteractions, p.avgInteractions)}</div>`,
+      `<div class="panel kpi"><div class="label">On the site now</div><div class="value">${data.activeNow ? '<span class="live-dot"></span>' : ""}${num(data.activeNow)}</div><div class="delta">visitors in the last 5 min</div></div>`,
+    ].join("");
+  }
+
+  function renderDaily() {
+    const range = dayRange(), byDay = new Map(data.daily.map(r => [r.day, r]));
+    const spansYears = range.length && range[0].slice(0, 4) !== range[range.length - 1].slice(0, 4);
+    const rows = range.map(d => ({ label: dateLabel(d, spansYears), full: dateLabel(d, true), values: byDay.get(d) || { views: 0, visitors: 0 } }));
+    $("daily-title").textContent = project ? pageName(project) + ": views per day" : "Views per day";
+    if (!data.totals.views) {
+      $("daily").innerHTML = `<div class="empty-chart">No visits in this range yet.</div>`;
+      return;
+    }
+    lineChart($("daily"), rows, [
+      { key: "views", label: "Views", color: "--series-1" },
+      { key: "visitors", label: "Visitors", color: "--series-2" },
+    ], { label: "Views and visitors per day" });
+  }
+
+  function renderProjects() {
+    const range = dayRange();
+    const stats = new Map(data.projects.map(r => [r.project, r]));
+    const names = [...new Set([...data.projects.map(r => r.project), ...data.allProjects])];
+    const total = data.projects.reduce((a, r) => a + r.views, 0) || 1;
+    const box = $("projects");
+    box.innerHTML = "";
+    if (!names.length) {
+      box.innerHTML = `<div class="panel empty-chart">No visits recorded yet. They'll show up here once people open the site.</div>`;
+      return;
+    }
+    names.forEach(name => {
+      const s = stats.get(name) || { views: 0, visitors: 0, avgDuration: 0, avgInteractions: 0, lastVisit: 0 };
+      const card = document.createElement("div");
+      card.className = "panel proj";
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-pressed", String(project === name));
+      card.innerHTML = `
+        <div class="name"><h3>${esc(pageName(name))}</h3><a href="${pageHref(name)}" target="_blank" rel="noopener">open ↗</a></div>
+        <div class="big">${num(s.views)}<small>views · ${Math.round(s.views / total * 100)}% of site</small></div>
+        <div class="share"><i style="width:${s.views / total * 100}%"></i></div>
+        <div class="spark"></div>
+        <dl>
+          <div><dt>Visitors</dt><dd>${num(s.visitors)}</dd></div>
+          <div><dt>Avg time</dt><dd>${dur(s.avgDuration)}</dd></div>
+          <div><dt>Clicks/view</dt><dd>${dec(s.avgInteractions)}</dd></div>
+        </dl>
+        <div class="last">${s.lastVisit ? "Last visit " + ago(s.lastVisit) : "No visits in this range"}</div>`;
+      card.querySelector("a").addEventListener("click", e => e.stopPropagation());
+      const toggle = () => { project = project === name ? "" : name; load(); };
+      card.addEventListener("click", toggle);
+      card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+      box.appendChild(card);
+      const per = new Map(data.projectDaily.filter(r => r.project === name).map(r => [r.day, r.views]));
+      const rows = range.map(d => ({ label: dateLabel(d), full: dateLabel(d, true), values: { views: per.get(d) || 0 } }));
+      lineChart(card.querySelector(".spark"), rows, [{ key: "views", label: "Views", color: "--series-1" }], { compact: true, height: 44, label: pageName(name) + " views per day" });
+    });
+  }
+
+  function rank(id, rows, fmt) {
+    const max = Math.max(1, ...rows.map(r => r.views));
+    $(id).innerHTML = rows.length
+      ? rows.map(r => `<li><span class="nm" title="${esc(fmt(r.name))}">${esc(fmt(r.name))}</span><span class="n">${num(r.views)}</span><span class="bar"><i style="width:${r.views / max * 100}%"></i></span></li>`).join("")
+      : `<li class="none">Nothing yet</li>`;
+  }
+
+  function renderBreakdown() {
+    $("breakdown-title").textContent = project ? `Where ${pageName(project)} visits come from` : "Where visits come from";
+    rank("referrers", data.referrers, n => n || "Direct / unknown");
+    rank("countries", data.countries, country);
+    rank("devices", data.devices, n => n || "Unknown");
+    hourChart($("hours"), data.hours);
+  }
+
+  function renderRecent() {
+    $("recent").innerHTML = data.recent.length
+      ? data.recent.map(r => `<tr>
+          <td title="${esc(new Date(r.ts).toLocaleString("en-ZA"))}">${ago(r.ts)}</td>
+          <td>${esc(pageName(r.project))}</td>
+          <td>${esc(r.referrer || "Direct")}</td>
+          <td>${esc(country(r.country))}</td>
+          <td>${esc(r.device || "–")}</td>
+          <td class="num">${dur(r.duration)}</td>
+          <td class="num">${num(r.interactions)}</td></tr>`).join("")
+      : `<tr><td colspan="7" class="empty-chart">No visits yet.</td></tr>`;
+  }
+
+  function render() {
+    if (!data) return;
+    $("filter-label").textContent = project ? "Showing only" : "Whole site";
+    $("clear-filter").hidden = !project;
+    $("filter-name").textContent = project ? pageName(project) : "";
+    document.querySelectorAll("#range button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.days === days)));
+    renderKpis();
+    renderDaily();
+    renderProjects();
+    renderBreakdown();
+    renderRecent();
+    $("status").textContent = "Updated " + new Date(data.now).toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  /* ---------- data + auth ---------- */
+  async function load() {
+    $("status").textContent = "Loading…";
+    let res;
+    try {
+      res = await fetch(`/Interactive/api/stats?days=${days}&project=${encodeURIComponent(project)}`, {
+        headers: { authorization: "Bearer " + password },
+        cache: "no-store",
+      });
+    } catch {
+      $("status").textContent = "Couldn't reach the server.";
+      return false;
+    }
+    if (res.status === 401) { lock("Wrong password."); return false; }
+    if (!res.ok) { $("status").textContent = "Server error (" + res.status + ")."; return false; }
+    data = await res.json();
+    $("login").hidden = true;
+    $("dash").hidden = false;
+    render();
+    clearInterval(timer);
+    timer = setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);
+    return true;
+  }
+
+  function lock(msg) {
+    password = "";
+    data = null;
+    try { sessionStorage.removeItem(KEY); } catch {}
+    clearInterval(timer);
+    $("dash").hidden = true;
+    $("login").hidden = false;
+    $("login-err").textContent = msg || "";
+    $("pw").value = "";
+    $("pw").focus();
+  }
+
+  $("login-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    password = $("pw").value;
+    $("unlock").disabled = true;
+    $("login-err").textContent = "";
+    if (await load()) { try { sessionStorage.setItem(KEY, password); } catch {} }
+    $("unlock").disabled = false;
+  });
+  $("logout").addEventListener("click", () => lock());
+  $("refresh").addEventListener("click", load);
+  $("clear-filter").addEventListener("click", () => { project = ""; load(); });
+  $("range").addEventListener("click", e => {
+    const b = e.target.closest("button[data-days]");
+    if (!b) return;
+    days = +b.dataset.days;
+    try { localStorage.setItem(KEY + "_days", days); } catch {}
+    load();
+  });
+
+  let lastW = 0;
+  new ResizeObserver(() => {
+    const w = document.querySelector(".wrap").clientWidth;
+    if (w !== lastW) { lastW = w; render(); }
+  }).observe(document.querySelector(".wrap"));
+  addEventListener("scroll", hideTip, { passive: true });
+
+  if (![0, 1, 7, 30, 90].includes(days)) days = 30;
+  if (password) load(); else lock();
+})();
+</script>
+</body>
+</html>
