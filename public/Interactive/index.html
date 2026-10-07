@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive MAM103X</title>
+<meta name="description" content="Interactive, unofficial study resources for MAM103X.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@500;700;800&display=swap">
+<style>
+/* Layout: ivory ground, script byline + mono heading, filter bar, one column of wide cards with coloured top edges */
+:root {
+  --sand: #faf7ee;
+  --cream: #fffefa;
+  --edge: #ebe3d1;
+  --ink: #2b2118;
+  --muted: #6f6355;
+  --soft: #8a7a66;
+  --f-script: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--sand);
+  color: var(--ink);
+  font: 17px/1.6 var(--f-body);
+  padding-inline: 16px;
+  padding-block: 64px 80px;
+  min-height: 100vh;
+}
+/* everything inside is drawn at 1/1.2 of its designed size */
+.wrap { max-width: 1000px; margin: 0 auto; zoom: 0.8333; }
+
+header { max-width: 760px; margin: 0 auto 56px; }
+.byline { font: 700 clamp(2rem, 5vw, 2.6rem)/1 var(--f-script); color: #5a4d3f; margin: 0 0 14px; transform: rotate(-1deg); transform-origin: left; }
+h1 { font: 800 clamp(1.9rem, 5vw, 2.6rem)/1.1 var(--f-mono); letter-spacing: -0.01em; margin: 0 0 22px; text-wrap: balance; }
+.intro { margin: 0; color: var(--muted); font-size: 1.12rem; max-width: 52ch; }
+
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin: 0 16px 32px; }
+.toolbar input {
+  flex: 1 1 18rem; min-width: 0;
+  font: 500 1rem/1 var(--f-mono); color: var(--ink);
+  background: var(--cream); border: 2px solid var(--edge); border-radius: 14px;
+  padding: 16px 20px;
+}
+.toolbar input::placeholder { color: var(--muted); }
+.toolbar input:focus-visible { outline: none; border-color: #c9b894; }
+.count { font: 700 0.85rem/1 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 40px 40px; grid-template-columns: 1fr; gap: 22px; margin-inline: 16px; }
+.card {
+  --c: #6c47ff;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "icon title open" "icon desc open";
+  column-gap: 30px; row-gap: 6px; align-items: center;
+  background: var(--cream);
+  border: 1px solid var(--edge);
+  border-top: 5px solid var(--c);
+  border-radius: 16px;
+  padding: 28px 36px 28px 32px;
+  color: var(--ink); text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -18px rgba(60, 40, 15, 0.55); }
+.card:focus-visible { outline: 3px solid var(--c); outline-offset: 4px; }
+.card.violet { --c: #ab9ce4; }
+.card.blue   { --c: #6da0da; }
+.card.rust   { --c: #a86e60; }
+.card.clay   { --c: #b5573d; }
+.card.green  { --c: #2f7a52; }
+.card.light_green  { --c: #62bb8b; }
+.card .icon { grid-area: icon; width: 56px; height: 56px; padding: 8px; border-radius: 14px; background: var(--sand); border: 1px solid var(--edge); }
+.card .icon svg { width: 100%; height: 100%; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.card .icon svg .fill { fill: var(--c); stroke: none; }
+.card .icon svg text { fill: var(--c); stroke: none; font: 700 10px var(--f-mono); }
+.card h2 { grid-area: title; align-self: end; font: 700 1.45rem/1.2 var(--f-mono); margin: 0; }
+.card p { grid-area: desc; align-self: start; margin: 0; color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+.card .open { grid-area: open; font: 700 1.05rem/1 var(--f-mono); color: var(--c); display: inline-flex; gap: 10px; align-items: center; white-space: nowrap; }
+.card:hover .open span { transform: translateX(3px); }
+.card .open span { transition: transform 0.15s ease; }
+
+.empty { text-align: center; color: var(--muted); font: 500 1rem var(--f-mono); padding: 40px 0; }
+footer { margin-top: 56px; text-align: center; font: 700 1.4rem/1 var(--f-script); color: #5a4d3f; }
+.subfooter { margin: 8px 0 0; text-align: center;  color: var(--soft); }
+
+@media (max-width: 520px) {
+  body { padding-block: 40px 56px; }
+  .toolbar { margin-inline: 0; }
+  .grid { margin-inline: 0; }
+  .card { padding: 22px 22px 20px; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "icon title" "desc desc" "open open"; column-gap: 16px; row-gap: 12px; }
+  .card .icon { width: 48px; height: 48px; }
+  .card h2 { align-self: center; font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .card .open span { transition: none; }
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="byline">math things by kira</p>
+    <h1>Interactive MAM103X</h1>
+    <p class="intro">Interactive, unofficial study resources I made for myself and my fellow UCT maths students to help interact and visualize concepts.</p>
+  </header>
+
+  <div class="toolbar">
+    <label for="filter" class="sr" hidden>Filter projects</label>
+    <input id="filter" type="search" placeholder="Filter projects…" autocomplete="off" spellcheck="false" aria-label="Filter projects">
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+
+  <!--
+    To add a project:
+      1. Put its files in public/Interactive/<FolderName>/index.html
+      2. Copy one <li> below and change: the colour class (violet, blue, rust, clay, green),
+         the href, the icon, the title and the description.
+  -->
+  <ul class="grid" id="grid">
+    <li>
+      <a class="card black" href="/Interactive/EulerApproximation/">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40">
+    <path d="M6 5v29h30"/>
+    <path d="M8 30C18 29 28 22 34 6" stroke-dasharray="2 3" opacity="0.55"/>
+    <path d="M8 30L16 28L24 24L32 16"/>
+    <circle class="fill" cx="8" cy="30" r="2.2"/>
+    <circle class="fill" cx="16" cy="28" r="2.2"/>
+    <circle class="fill" cx="24" cy="24" r="2.2"/>
+    <circle class="fill" cx="32" cy="16" r="2.2"/>
+  </svg>
+        </span>
+        <h2>Euler Approximation</h2>
+        <p>Create your own directional fields and learn more about Euler Approximation. Walk with the program stwp by step on how to calculate each next approximate.</p>
+        <span class="open">open <span>→</span></span>
+      </a>
+    </li>
+    <li>
+      <a class="card light_green" href="/Interactive/ComplexNumbers/">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M4 20h32M20 36V4"/><path d="M20 20l10-10"/><circle class="fill" cx="30" cy="10" r="3.2"/><path d="M26 20a6 6 0 0 0-1.8-4.2"/></svg>
+        </span>
+        <h2>Complex Numbers</h2>
+        <p>Plot complex numbers on the Argand diagram and explore modulus, argument and polar form by dragging points around.</p>
+        <span class="open">open <span>→</span></span>
+      </a>
+    </li>
+    <li>
+      <a class="card blue" href="/Interactive/RowEchelon/">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M9 5H5v30h4M31 5h4v30h-4"/><path d="M26 8v24" stroke-dasharray="2.5 3"/><text x="9" y="16">1</text><text x="9" y="28">0</text><text x="17" y="28">1</text></svg>
+        </span>
+        <h2>Row Echelon</h2>
+        <p>Turn a linear system into an augmented matrix and row-reduce it yourself with operations like R2 → R2 − 2R1, in exact fractions.</p>
+        <span class="open">open <span>→</span></span>
+      </a>
+    </li>
+    
+  </ul>
+  <p class="empty" id="empty" hidden>No projects match that.</p>
+
+  <footer>stay curious !</footer>
+  <p class= "subfooter">Special thanks to Dr Harry Wiggins #maths everyday</p>
+
+</div>
+
+<script>
+(() => {
+  const input = document.getElementById("filter");
+  const items = [...document.querySelectorAll("#grid > li")];
+  const count = document.getElementById("count");
+  const empty = document.getElementById("empty");
+  const total = items.length;
+  const label = n => `Showing ${n} of ${total} ${total === 1 ? "project" : "projects"}`;
+  function update() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const li of items) {
+      const match = !q || li.textContent.toLowerCase().includes(q);
+      li.hidden = !match;
+      if (match) shown++;
+    }
+    count.textContent = label(shown);
+    empty.hidden = shown > 0;
+  }
+  input.addEventListener("input", update);
+  update();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,890 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"><title>Euler's Tangent Walk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link rel="stylesheet" href="index_files/css2_Cun7.css">
+<style>
+  :root{
+    --ivory:#FBF7EC;
+    --panel:#F3EDDD;
+    --card:#FFFDF6;
+    --ink:#2E2B33;
+    --ink-soft:#6E6776;
+    --ink-faint:#9A93A0;
+    --rule:#E2DAC6;
+    --blue:#7E9BD4;
+    --blue-deep:#5A78B4;
+    --blue-wash:#D9E2F4;
+    --sage:#8FB89B;
+    --sage-deep:#5E8C6D;
+    --lilac:#B7A6D9;
+    --peach:#E39877;
+    --butter:#EFD79A;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"Karla","Helvetica Neue",Arial,sans-serif;
+    --mono:"DM Mono","SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding-inline:22px;padding-block:0 72px}
+  var,.v{font-family:var(--serif);font-style:italic;font-size:1.06em;letter-spacing:.01em}
+  sub{font-size:.66em;font-style:normal;font-family:var(--sans)}
+
+  /* ---------- header ---------- */
+  header{padding-block:60px 30px}
+  .eyebrow{
+    font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--lilac);margin:0 0 18px
+  }
+  h1{
+    font-family:var(--serif);font-weight:600;font-size:clamp(2.6rem,7vw,4.3rem);
+    line-height:1.02;margin:0;letter-spacing:-.015em;text-wrap:balance
+  }
+  h1 em{font-style:italic;font-weight:400;color:var(--blue-deep)}
+  .byline{
+    margin:16px 0 0;font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-faint)
+  }
+  .lede{
+    margin:26px 0 0;padding-left:20px;border-left:3px solid var(--sage);
+    max-width:60ch;font-size:1.12rem;color:var(--ink-soft)
+  }
+  .lede strong{color:var(--ink);font-weight:500}
+
+  /* ---------- hero diagram ---------- */
+  .thesis{
+    display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:40px;align-items:center;
+    margin-top:44px;padding-block:32px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)
+  }
+  .thesis p{margin:0 0 14px;max-width:46ch;color:var(--ink-soft)}
+  .thesis p:last-child{margin-bottom:0}
+  .diagram{width:100%;max-width:100%;height:auto;display:block}
+  .dg-label{font-family:var(--mono);font-size:11px;fill:var(--ink-soft)}
+  .dg-label.bl{fill:var(--blue-deep)}
+  .dg-label.sg{fill:var(--sage-deep)}
+  .dg-label.pc{fill:#C2714B}
+
+  /* ---------- recipe ---------- */
+  section{margin-top:56px}
+  h2{
+    font-family:var(--serif);font-weight:600;font-size:1.9rem;margin:0 0 6px;letter-spacing:-.01em
+  }
+  .sub{margin:0 0 26px;color:var(--ink-soft);max-width:60ch}
+  .recipe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;margin:0;padding:0;counter-reset:step}
+  .recipe li{list-style:none;position:relative;padding-top:14px;border-top:2px solid var(--blue-wash)}
+  .recipe li h3{
+    font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--blue-deep);margin:0 0 8px
+  }
+  .recipe li p{margin:0;font-size:.95rem;color:var(--ink-soft)}
+  .formula{
+    margin-top:30px;background:var(--panel);border-radius:2px;
+    padding:26px 28px;display:flex;flex-wrap:wrap;gap:14px 44px;align-items:baseline
+  }
+  .formula .eq{font-family:var(--serif);font-size:1.5rem;white-space:nowrap}
+  .formula .eq b{font-weight:500;font-style:normal;color:var(--blue-deep)}
+  .formula .note{font-size:.88rem;color:var(--ink-soft);max-width:34ch}
+
+  /* ---------- lab ---------- */
+  .lab{
+    display:grid;grid-template-columns:288px minmax(0,1fr);gap:0;
+    background:var(--card);border:1px solid var(--rule);border-radius:3px;overflow:hidden
+  }
+  .rail{padding:24px 22px;border-right:1px solid var(--rule);background:var(--panel)}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+  .field label{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)
+  }
+  .deriv{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--rule);border-radius:2px;padding:0 10px}
+  .deriv span{font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--blue-deep);white-space:nowrap}
+  input{
+    font-family:var(--mono);font-size:.95rem;color:var(--ink);
+    background:var(--card);border:1px solid var(--rule);border-radius:2px;padding:9px 10px;width:100%
+  }
+  .deriv input{border:0;padding-left:0;background:transparent}
+  input:focus-visible,button:focus-visible,.chip:focus-visible{outline:2px solid var(--blue-deep);outline-offset:2px}
+  .trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  button{
+    font-family:var(--sans);font-size:.88rem;font-weight:700;cursor:pointer;
+    border-radius:2px;padding:9px 14px;border:1px solid var(--blue-deep);
+    background:var(--blue-deep);color:var(--card);transition:background .15s,color .15s
+  }
+  button.ghost{background:transparent;color:var(--blue-deep)}
+  button.ghost:hover{background:var(--blue-wash)}
+  button:hover{background:#4C68A0}
+  button.ghost:hover{background:var(--blue-wash)}
+  .presets{margin-top:26px;border-top:1px solid var(--rule);padding-top:18px}
+  .presets p{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-soft);margin:0 0 10px
+  }
+  .chip{
+    display:block;width:100%;text-align:left;font-family:var(--sans);font-size:.85rem;font-weight:500;
+    background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--ink);
+    padding:8px 2px;cursor:pointer
+  }
+  .chip:hover{color:var(--blue-deep)}
+  .chip small{display:block;font-family:var(--mono);font-size:.7rem;color:var(--ink-faint)}
+  .stage{padding:20px 22px 22px;min-width:0}
+  .canvas-box{position:relative;width:100%;height:392px}
+  canvas{width:100%;height:100%;display:block;touch-action:none}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:14px;font-size:.82rem;color:var(--ink-soft)}
+  .legend i{display:inline-block;width:20px;height:0;border-top-width:3px;border-top-style:solid;vertical-align:.28em;margin-right:7px}
+  .readout{
+    display:flex;flex-wrap:wrap;gap:6px 26px;margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)
+  }
+  .stat{min-width:120px}
+  .stat dt{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-faint);margin:0
+  }
+  .stat dd{margin:2px 0 0;font-family:var(--mono);font-size:1.02rem;font-variant-numeric:tabular-nums}
+  .stat dd.err{color:#C2714B}
+  .alert{
+    margin-top:14px;padding:10px 13px;border-left:3px solid var(--peach);background:#FBEDE4;
+    font-size:.88rem;color:#8A4B2A;border-radius:2px
+  }
+  .alert[hidden]{display:none}
+
+  /* ---------- table ---------- */
+  .tablewrap{margin-top:26px;overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--card)}
+  table{border-collapse:collapse;width:100%;min-width:660px;font-family:var(--mono);font-size:.84rem;font-variant-numeric:tabular-nums}
+  th,td{padding:8px 14px;text-align:right;white-space:nowrap}
+  th{
+    background:var(--panel);font-weight:500;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);border-bottom:1px solid var(--rule);position:sticky;top:0
+  }
+  th:first-child,td:first-child{text-align:left;color:var(--ink-faint)}
+  tbody tr{border-bottom:1px solid #F0EAD9}
+  tbody tr:last-child{border-bottom:0}
+  tbody tr.on{background:var(--blue-wash)}
+  td.drift{color:#C2714B}
+  .tnote{font-size:.82rem;color:var(--ink-faint);margin:10px 2px 0}
+
+  /* ---------- closing ---------- */
+  .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:34px}
+  .cols h3{font-family:var(--serif);font-size:1.15rem;font-weight:600;margin:0 0 8px}
+  .cols p{margin:0 0 12px;color:var(--ink-soft);font-size:.95rem;max-width:44ch}
+  .cols p:last-child{margin-bottom:0}
+  footer{
+    margin-top:64px;padding-top:20px;border-top:1px solid var(--rule);
+    font-family:var(--mono);font-size:.74rem;color:var(--ink-faint);display:flex;flex-wrap:wrap;gap:8px 24px
+  }
+
+  @media (max-width:880px){
+    .thesis{grid-template-columns:1fr;gap:28px}
+    .lab{grid-template-columns:1fr}
+    .rail{border-right:0;border-bottom:1px solid var(--rule)}
+    .recipe,.cols{grid-template-columns:1fr;gap:22px}
+    .canvas-box{height:320px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+
+</head><body><div class="wrap">
+
+  <header>
+    <p class="eyebrow">Differential equations — numerical methods</p>
+    <h1>Euler's <em>tangent walk</em></h1>
+    <p class="byline"></p>
+    <p class="lede">The point of Euler's method is to <strong>approximate the numerical solution to a differential equation when an exact formula cannot be found</strong>. Real life is messy, and we need ways to find solutions to rates of change.</p>
+  </header>
+
+  
+
+  
+
+  <section>
+    <h2>Take a walk of your own</h2>
+    <p class="sub">Type a rate of change, choose a step size and how many steps to take. The lilac hairs are the slope field — the direction the equation points at every point on the plane.</p>
+
+    <div class="lab">
+      <div class="rail">
+        <div class="field">
+          <label for="fx">Rate of change</label>
+          <div class="deriv"><span>dy/dx =</span><input id="fx" type="text" spellcheck="false" autocomplete="off" value="y - x^2 + 1"></div>
+        </div>
+        <div class="trio">
+          <div class="field"><label for="x0">x&#8320;</label><input id="x0" type="number" step="any" value="0"></div>
+          <div class="field"><label for="y0">y&#8320;</label><input id="y0" type="number" step="any" value="0.5"></div>
+          <div class="field"><label for="h">h</label><input id="h" type="number" step="any" value="0.25"></div>
+        </div>
+        <div class="field"><label for="steps">Steps to plot</label><input id="steps" type="number" min="1" max="500" step="1" value="8"></div>
+        <div class="btns">
+          <button id="run" type="button">Take the walk</button>
+          <button id="halve" class="ghost" type="button">Halve h</button>
+        </div>
+        <div class="presets">
+          <p>Try one</p>
+          <button class="chip" type="button" data-f="y - x^2 + 1" data-x0="0" data-y0="0.5" data-h="0.25" data-n="8">Textbook case<small>dy/dx = y &#8722; x² + 1</small></button>
+          <button class="chip" type="button" data-f="-0.6*(y - 20)" data-x0="0" data-y0="95" data-h="0.4" data-n="14">Cooling coffee<small>95°C in a 20°C room</small></button>
+          <button class="chip" type="button" data-f="0.9*y*(1 - y/8)" data-x0="0" data-y0="0.6" data-h="0.55" data-n="16">Logistic growth<small>population with a ceiling</small></button>
+          <button class="chip" type="button" data-f="sin(x) - 0.4*y" data-x0="0" data-y0="0" data-h="0.45" data-n="24">Driven and damped<small>no elementary shortcut</small></button>
+          <button class="chip" type="button" data-f="x^2 + y^2" data-x0="0" data-y0="0.4" data-h="0.15" data-n="10">Runaway<small>blows up in finite x</small></button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="canvas-box"><canvas id="plot" width="1324" height="784"></canvas></div>
+        <div class="legend">
+          <span><i style="border-top-color:#7E9BD4"></i>Euler's walk</span>
+          <span><i style="border-top-color:#8FB89B;border-top-style:dashed"></i>Accurate solution</span>
+          <span><i style="border-top-color:#E39877"></i>Drift</span>
+          <span><i style="border-top-color:#B7A6D9"></i>Slope field</span>
+        </div>
+        <dl class="readout">
+          <div class="stat"><dt>Interval</dt><dd id="r-int">x = 0.000 → 2.000</dd></div>
+          <div class="stat"><dt>Ends at y</dt><dd id="r-end">4.77965</dd></div>
+          <div class="stat"><dt>Accurate value</dt><dd id="r-true">5.30547</dd></div>
+          <div class="stat"><dt>Error there</dt><dd id="r-err" class="err">0.52582</dd></div>
+        </dl>
+        <p class="alert" id="alert" hidden=""></p>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>n</th><th>x&#8345;</th><th>y&#8345;</th><th>f(x&#8345;, y&#8345;)</th><th>h · f</th><th>y&#8345;&#8330;&#8321;</th><th>accurate</th><th>drift</th></tr>
+        </thead>
+        <tbody id="tbody"><tr data-i="0"><td>0</td><td>0.0000</td><td>0.5000</td><td>1.5000</td><td>0.3750</td><td>0.8750</td><td>0.9205</td><td class="drift">0.0455</td></tr><tr data-i="1"><td>1</td><td>0.2500</td><td>0.8750</td><td>1.8125</td><td>0.4531</td><td>1.3281</td><td>1.4256</td><td class="drift">0.0975</td></tr><tr data-i="2"><td>2</td><td>0.5000</td><td>1.3281</td><td>2.0781</td><td>0.5195</td><td>1.8477</td><td>2.0040</td><td class="drift">0.1563</td></tr><tr data-i="3"><td>3</td><td>0.7500</td><td>1.8477</td><td>2.2852</td><td>0.5713</td><td>2.4189</td><td>2.6409</td><td class="drift">0.2219</td></tr><tr data-i="4"><td>4</td><td>1.0000</td><td>2.4189</td><td>2.4189</td><td>0.6047</td><td>3.0237</td><td>3.3173</td><td class="drift">0.2936</td></tr><tr data-i="5"><td>5</td><td>1.2500</td><td>3.0237</td><td>2.4612</td><td>0.6153</td><td>3.6390</td><td>4.0092</td><td class="drift">0.3702</td></tr><tr data-i="6"><td>6</td><td>1.5000</td><td>3.6390</td><td>2.3890</td><td>0.5972</td><td>4.2362</td><td>4.6852</td><td class="drift">0.4490</td></tr><tr data-i="7"><td>7</td><td>1.7500</td><td>4.2362</td><td>2.1737</td><td>0.5434</td><td>4.7797</td><td>5.3055</td><td class="drift">0.5258</td></tr></tbody>
+      </table>
+    </div>
+    <p class="tnote" id="tnote">Each row is one step of the walk: read the slope, multiply by <var>h</var>, add it on.</p>
+  </section>
+
+  <section>
+    <h2>Why it drifts, and what to do</h2>
+    <div class="cols">
+      <div>
+        <h3>The error is roughly proportional to h</h3>
+        <p>Each step throws away the curvature — you walked a straight line where the real solution bends. Those small mistakes accumulate, and the accumulated error shrinks in step with <var>h</var>: halve the step size and you roughly halve the gap at the end.</p>
+        <p>Press <em>Halve h</em> a few times and watch the <span style="color:#C2714B">error</span> readout. It falls by about half each press, while the number of steps doubles. That trade — accuracy against work — is the whole subject in miniature.</p>
+      </div>
+      <div>
+        <h3>Where it gives up</h3>
+        <p>Euler is honest but crude. On a solution that curves hard, or one that blows up (try <em>Runaway</em>), the walk wanders off long before the true curve does. Very small steps help, until rounding error starts to bite.</p>
+        <p>The fixes all use the same trick: sample the slope more than once per step before committing. Averaging the slope at both ends gives Heun's method; four samples per step gives Runge–Kutta 4, which draws the green reference curve on this page.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>y&#8345;&#8330;&#8321; = y&#8345; + h·f(x&#8345;, y&#8345;)</span>
+    <span>reference curve: RK4</span>
+    <span>functions: sin cos tan asin acos atan sinh cosh tanh exp ln log sqrt abs — constants: pi e</span>
+  </footer>
+
+  <section>
+    <h2>The whole method, three moves</h2>
+    <p class="sub">It really is this short. Everything else is bookkeeping.</p>
+    <ol class="recipe">
+      <li>
+        <h3>1 — Read the slope</h3>
+        <p>You are standing at <span class="v">(x<sub>n</sub>, y<sub>n</sub>)</span>. The differential equation tells you the slope there: <span class="v">f(x<sub>n</sub>, y<sub>n</sub>)</span>.</p>
+      </li>
+      <li>
+        <h3>2 — Step along it</h3>
+        <p>Move <var>h</var> to the right and rise by <span class="v">h·f(x<sub>n</sub>, y<sub>n</sub>)</span>, pretending the curve is straight for that short stretch.</p>
+      </li>
+      <li>
+        <h3>3 — Re-aim, repeat</h3>
+        <p>You have landed somewhere new. Read the slope again from there and take the next step. The curve is rebuilt one tangent at a time.</p>
+      </li>
+    </ol>
+    <div class="formula">
+      <div class="eq">x<sub>n+1</sub> <b>=</b> x<sub>n</sub> + h</div>
+      <div class="eq">y<sub>n+1</sub> <b>=</b> y<sub>n</sub> + h*f(x<sub>n</sub>, y<sub>n</sub>)</div>
+      <p class="note">Starting from a known point <span class="v">(x<sub>0</sub>, y<sub>0</sub>)</span> — the initial condition. Without one there is nowhere to stand.</p>
+    </div>
+  </section>
+
+<div class="thesis">
+    <div>
+      <p>A differential equation hands you a rule for the <em>slope</em> at every point — but not the curve itself. Most of the equations that describe real systems (cooling coffee, spreading disease, a falling body with drag) have no tidy formula you can solve for by hand.</p>
+      <p>So you stop looking for the formula. You stand on the one point you know, aim along the tangent, take a short step of width <var>h</var>, and re-aim. Repeat. The kinked path you leave behind is the approximation.</p>
+    </div>
+    <svg class="diagram" viewBox="0 0 420 250" role="img" aria-label="One Euler step: a straight tangent step of width h lands slightly below the true curve, and the small gap between them is the error.">
+      <line x1="16" y1="212" x2="404" y2="212" stroke="#E2DAC6" stroke-width="1"></line>
+      <path d="M24,192 C120,176 208,150 300,82 S372,46 400,34" fill="none" stroke="#8FB89B" stroke-width="2"></path>
+      <line x1="120" y1="168" x2="300" y2="104" stroke="#7E9BD4" stroke-width="2.5" stroke-linecap="round"></line>
+      <line x1="120" y1="168" x2="120" y2="212" stroke="#C9C0AC" stroke-width="1" stroke-dasharray="3 3"></line>
+      <line x1="300" y1="104" x2="300" y2="212" stroke="#C9C0AC" stroke-width="1" stroke-dasharray="3 3"></line>
+      <line x1="300" y1="104" x2="300" y2="82" stroke="#E39877" stroke-width="3" stroke-linecap="round"></line>
+      <line x1="120" y1="226" x2="300" y2="226" stroke="#9A93A0" stroke-width="1"></line>
+      <line x1="120" y1="222" x2="120" y2="230" stroke="#9A93A0" stroke-width="1"></line>
+      <line x1="300" y1="222" x2="300" y2="230" stroke="#9A93A0" stroke-width="1"></line>
+      <circle cx="120" cy="168" r="4.5" fill="#5A78B4"></circle>
+      <circle cx="300" cy="104" r="4.5" fill="#FBF7EC" stroke="#5A78B4" stroke-width="2.5"></circle>
+      <circle cx="300" cy="82" r="3.5" fill="#5E8C6D"></circle>
+      <text class="dg-label" x="210" y="244" text-anchor="middle">h</text>
+      <text class="dg-label bl" x="112" y="160" text-anchor="end">(x&#8345;, y&#8345;)</text>
+      <text class="dg-label bl" x="310" y="118">y&#8345;&#8330;&#8321;</text>
+      <text class="dg-label sg" x="310" y="76">true curve</text>
+      <text class="dg-label pc" x="292" y="94" text-anchor="end">error</text>
+      <text class="dg-label bl" x="160" y="198">slope = f(x&#8345;, y&#8345;)</text>
+    </svg>
+  </div>
+
+
+
+
+
+
+</div>
+
+
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- expression compiler (no eval) ---------------- */
+  var FUNCS = {
+    sin:Math.sin, cos:Math.cos, tan:Math.tan, asin:Math.asin, acos:Math.acos, atan:Math.atan,
+    sinh:Math.sinh, cosh:Math.cosh, tanh:Math.tanh, exp:Math.exp, sqrt:Math.sqrt,
+    abs:Math.abs, sign:Math.sign, ln:Math.log, log:Math.log10, log10:Math.log10,
+    log2:Math.log2, floor:Math.floor, ceil:Math.ceil, round:Math.round
+  };
+  var CONSTS = { pi:Math.PI, e:Math.E, tau:Math.PI*2 };
+  function has(o,k){ return Object.prototype.hasOwnProperty.call(o,k); }
+
+  function compile(src){
+    var s = src, i = 0;
+    function fail(m){ throw new Error(m); }
+    function ws(){ while(i < s.length && /\s/.test(s.charAt(i))) i++; }
+    function at(){ ws(); return s.charAt(i); }
+
+    function expr(){
+      var node = term(), c;
+      for(;;){
+        c = at();
+        if(c === '+'){ i++; node = add(node, term()); }
+        else if(c === '-'){ i++; node = sub(node, term()); }
+        else return node;
+      }
+    }
+    function add(l,r){ return function(x,y){ return l(x,y) + r(x,y); }; }
+    function sub(l,r){ return function(x,y){ return l(x,y) - r(x,y); }; }
+
+    function term(){
+      var node = unary(), c;
+      for(;;){
+        c = at();
+        if(c === '*'){ i++; node = mul(node, unary()); }
+        else if(c === '/'){ i++; node = div(node, unary()); }
+        else if(c && /[0-9.a-zA-Zπ(]/.test(c)){ node = mul(node, unary()); }
+        else return node;
+      }
+    }
+    function mul(l,r){ return function(x,y){ return l(x,y) * r(x,y); }; }
+    function div(l,r){ return function(x,y){ return l(x,y) / r(x,y); }; }
+
+    function unary(){
+      var c = at(), r;
+      if(c === '-'){ i++; r = unary(); return function(x,y){ return -r(x,y); }; }
+      if(c === '+'){ i++; return unary(); }
+      return power();
+    }
+    function power(){
+      var base = primary(), ex;
+      ws();
+      if(s.charAt(i) === '^' || (s.charAt(i) === '*' && s.charAt(i+1) === '*')){
+        i += (s.charAt(i) === '^') ? 1 : 2;
+        ex = unary();
+        return function(x,y){ return Math.pow(base(x,y), ex(x,y)); };
+      }
+      return base;
+    }
+    function primary(){
+      ws();
+      var c = s.charAt(i), rest, m, name, lower, inner, arg, fn, v;
+      if(c === ''){ fail('the expression stops early &mdash; something is missing at the end'); }
+      if(c === '('){
+        i++; inner = expr(); ws();
+        if(s.charAt(i) !== ')') fail('a bracket "(" is never closed');
+        i++; return inner;
+      }
+      rest = s.slice(i);
+      m = /^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/.exec(rest);
+      if(m){ i += m[0].length; v = parseFloat(m[0]); return function(){ return v; }; }
+      m = /^[A-Za-zπ][A-Za-z0-9_π]*/.exec(rest);
+      if(m){
+        name = m[0]; i += name.length; lower = name.toLowerCase();
+        if(has(FUNCS, lower)){
+          ws();
+          if(s.charAt(i) !== '(') fail('"' + name + '" needs brackets, like ' + lower + '(x)');
+          i++; arg = expr(); ws();
+          if(s.charAt(i) !== ')') fail('"' + lower + '(" is never closed');
+          i++; fn = FUNCS[lower];
+          return function(x,y){ return fn(arg(x,y)); };
+        }
+        if(lower === 'x') return function(x){ return x; };
+        if(lower === 'y') return function(x,y){ return y; };
+        if(name === 'π') return function(){ return Math.PI; };
+        if(has(CONSTS, lower)){ v = CONSTS[lower]; return function(){ return v; }; }
+        fail('"' + name + '" is not a name I know &mdash; use x, y, numbers, or functions like sin, exp, sqrt');
+      }
+      fail('"' + c + '" does not belong there');
+    }
+
+    var f = expr();
+    ws();
+    if(i < s.length) fail('"' + s.charAt(i) + '" does not belong there');
+    return f;
+  }
+
+  /* ---------------- solvers ---------------- */
+  var BIG = 1e12;
+
+  function eulerWalk(f, x0, y0, h, n){
+    var nodes = [], x = x0, y = y0, k, m, stopped = false;
+    for(k = 0; k <= n; k++){
+      m = f(x, y);
+      if(!isFinite(m)) m = NaN;
+      nodes.push({ x:x, y:y, m:m });
+      if(k === n) break;
+      if(!isFinite(m) || Math.abs(y) > BIG){ stopped = true; break; }
+      y = y + h * m;
+      x = x + h;
+      if(!isFinite(y) || Math.abs(y) > BIG){
+        nodes.push({ x:x, y:y, m:NaN });
+        stopped = true;
+        break;
+      }
+    }
+    return { nodes:nodes, stopped:stopped };
+  }
+
+  function rk4(f, x0, y0, span, count){
+    var dx = span / count, pts = [{ x:x0, y:y0 }], x = x0, y = y0, i, k1, k2, k3, k4;
+    for(i = 0; i < count; i++){
+      k1 = f(x, y);
+      k2 = f(x + dx/2, y + dx*k1/2);
+      k3 = f(x + dx/2, y + dx*k2/2);
+      k4 = f(x + dx, y + dx*k3);
+      y = y + dx*(k1 + 2*k2 + 2*k3 + k4)/6;
+      x = x + dx;
+      if(!isFinite(y) || Math.abs(y) > BIG){ pts.push({ x:x, y:NaN }); break; }
+      pts.push({ x:x, y:y });
+    }
+    return { pts:pts, dx:dx, x0:x0 };
+  }
+
+  function refAt(ref, x){
+    if(!ref || ref.pts.length < 2 || ref.dx === 0) return NaN;
+    var t = (x - ref.x0) / ref.dx, j = Math.floor(t), fr;
+    if(j < 0 || j >= ref.pts.length - 1){
+      if(Math.abs(t - (ref.pts.length - 1)) < 1e-9) return ref.pts[ref.pts.length - 1].y;
+      return NaN;
+    }
+    fr = t - j;
+    var a = ref.pts[j].y, b = ref.pts[j+1].y;
+    if(!isFinite(a) || !isFinite(b)) return NaN;
+    return a + (b - a) * fr;
+  }
+
+  /* ---------------- formatting ---------------- */
+  function fmt(v, d){
+    if(v === undefined || v === null || !isFinite(v)) return '—';
+    var a = Math.abs(v);
+    if(a !== 0 && (a >= 1e6 || a < 1e-4)) return v.toExponential(2);
+    return v.toFixed(d === undefined ? 4 : d);
+  }
+  function fmtTick(v, step){
+    if(Math.abs(v) < step * 1e-6) return '0';
+    var d = Math.max(0, Math.min(6, Math.ceil(-Math.log10(step)) + 1));
+    var a = Math.abs(v);
+    if(a >= 1e5 || (a < 1e-3 && a > 0)) return v.toExponential(1);
+    return String(parseFloat(v.toFixed(d)));
+  }
+  function niceStep(range, target){
+    if(!(range > 0)) return 1;
+    var raw = range / target,
+        mag = Math.pow(10, Math.floor(Math.log10(raw))),
+        norm = raw / mag, step;
+    if(norm < 1.5) step = 1; else if(norm < 3.5) step = 2; else if(norm < 7.5) step = 5; else step = 10;
+    return step * mag;
+  }
+
+  /* ---------------- state + elements ---------------- */
+  var el = {
+    fx: document.getElementById('fx'),
+    x0: document.getElementById('x0'),
+    y0: document.getElementById('y0'),
+    h:  document.getElementById('h'),
+    steps: document.getElementById('steps'),
+    run: document.getElementById('run'),
+    halve: document.getElementById('halve'),
+    canvas: document.getElementById('plot'),
+    alert: document.getElementById('alert'),
+    tbody: document.getElementById('tbody'),
+    tnote: document.getElementById('tnote'),
+    rInt: document.getElementById('r-int'),
+    rEnd: document.getElementById('r-end'),
+    rTrue: document.getElementById('r-true'),
+    rErr: document.getElementById('r-err')
+  };
+  var ctx = el.canvas.getContext('2d');
+  var PAD = { l:56, r:20, t:18, b:34 };
+  var S = { f:null, nodes:[], ref:null, view:null, reveal:1, hover:-1, W:0, H:0 };
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var raf = 0;
+
+  function sizeCanvas(){
+    var r = el.canvas.getBoundingClientRect(),
+        dpr = window.devicePixelRatio || 1;
+    S.W = Math.max(240, Math.round(r.width));
+    S.H = Math.max(200, Math.round(r.height));
+    el.canvas.width = Math.round(S.W * dpr);
+    el.canvas.height = Math.round(S.H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function X(v){ var V = S.view; return PAD.l + (v - V.xmin) / (V.xmax - V.xmin) * (S.W - PAD.l - PAD.r); }
+  function Y(v){ var V = S.view; return PAD.t + (V.ymax - v) / (V.ymax - V.ymin) * (S.H - PAD.t - PAD.b); }
+
+  /* ---------------- drawing ---------------- */
+  function draw(){
+    if(!S.view) return;
+    var V = S.view, W = S.W, H = S.H,
+        left = PAD.l, right = W - PAD.r, top = PAD.t, bottom = H - PAD.b,
+        i, j, x, y, gx, gy, px1, py1;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFDF6';
+    ctx.fillRect(0, 0, W, H);
+
+    var sx = niceStep(V.xmax - V.xmin, Math.max(3, Math.round((right - left) / 92))),
+        sy = niceStep(V.ymax - V.ymin, Math.max(3, Math.round((bottom - top) / 56)));
+
+    /* grid + ticks */
+    ctx.font = '11px "DM Mono", monospace';
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#EEE7D6';
+    ctx.fillStyle = '#9A93A0';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for(gx = Math.ceil(V.xmin / sx) * sx; gx <= V.xmax + sx * 1e-6; gx += sx){
+      px1 = Math.round(X(gx)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(px1, top); ctx.lineTo(px1, bottom); ctx.stroke();
+      ctx.fillText(fmtTick(gx, sx), px1, bottom + 8);
+    }
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for(gy = Math.ceil(V.ymin / sy) * sy; gy <= V.ymax + sy * 1e-6; gy += sy){
+      py1 = Math.round(Y(gy)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(left, py1); ctx.lineTo(right, py1); ctx.stroke();
+      ctx.fillText(fmtTick(gy, sy), left - 9, py1);
+    }
+
+    /* axes */
+    ctx.strokeStyle = '#D6CDB8';
+    ctx.beginPath();
+    if(V.ymin <= 0 && V.ymax >= 0){ py1 = Math.round(Y(0)) + 0.5; ctx.moveTo(left, py1); ctx.lineTo(right, py1); }
+    if(V.xmin <= 0 && V.xmax >= 0){ px1 = Math.round(X(0)) + 0.5; ctx.moveTo(px1, top); ctx.lineTo(px1, bottom); }
+    ctx.stroke();
+    ctx.strokeStyle = '#E2DAC6';
+    ctx.strokeRect(left + 0.5, top + 0.5, right - left - 1, bottom - top - 1);
+
+    /* slope field */
+    if(S.f){
+      var cols = Math.max(8, Math.min(22, Math.round((right - left) / 44))),
+          rows = Math.max(5, Math.min(16, Math.round((bottom - top) / 34))),
+          L = 15, m, dxp, dyp, len;
+      ctx.strokeStyle = 'rgba(183,166,217,0.72)';
+      ctx.lineWidth = 1.4;
+      ctx.lineCap = 'round';
+      for(i = 0; i <= cols; i++){
+        for(j = 0; j <= rows; j++){
+          x = V.xmin + (V.xmax - V.xmin) * i / cols;
+          y = V.ymin + (V.ymax - V.ymin) * j / rows;
+          m = NaN;
+          try { m = S.f(x, y); } catch(e){ m = NaN; }
+          if(!isFinite(m)) continue;
+          dxp = (S.W - PAD.l - PAD.r) / (V.xmax - V.xmin);
+          dyp = -(bottom - top) / (V.ymax - V.ymin) * m;
+          len = Math.sqrt(dxp * dxp + dyp * dyp);
+          if(!isFinite(len) || len === 0) continue;
+          dxp = dxp / len * L / 2; dyp = dyp / len * L / 2;
+          px1 = X(x); py1 = Y(y);
+          ctx.beginPath();
+          ctx.moveTo(px1 - dxp, py1 - dyp);
+          ctx.lineTo(px1 + dxp, py1 + dyp);
+          ctx.stroke();
+        }
+      }
+    }
+
+    /* accurate reference curve */
+    if(S.ref && S.ref.pts.length > 1){
+      ctx.strokeStyle = '#8FB89B';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      var started = false;
+      for(i = 0; i < S.ref.pts.length; i++){
+        var p = S.ref.pts[i];
+        if(!isFinite(p.y)){ started = false; continue; }
+        if(!started){ ctx.moveTo(X(p.x), Y(p.y)); started = true; }
+        else ctx.lineTo(X(p.x), Y(p.y));
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    /* how many euler segments are revealed */
+    var n = S.nodes.length, shown = Math.max(1, Math.min(n, Math.ceil(S.reveal * (n - 1)) + 1));
+
+    /* drift hairs */
+    ctx.strokeStyle = 'rgba(227,152,119,0.85)';
+    ctx.lineWidth = 2;
+    for(i = 0; i < shown; i++){
+      var nd = S.nodes[i], rv = refAt(S.ref, nd.x);
+      if(!isFinite(rv) || !isFinite(nd.y)) continue;
+      if(Math.abs(Y(nd.y) - Y(rv)) < 2) continue;
+      ctx.beginPath();
+      ctx.moveTo(X(nd.x), Y(nd.y));
+      ctx.lineTo(X(nd.x), Y(rv));
+      ctx.stroke();
+    }
+
+    /* euler walk */
+    ctx.strokeStyle = '#7E9BD4';
+    ctx.lineWidth = 2.6;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    var open = false;
+    for(i = 0; i < shown; i++){
+      var q = S.nodes[i];
+      if(!isFinite(q.y)){ open = false; continue; }
+      if(!open){ ctx.moveTo(X(q.x), Y(q.y)); open = true; }
+      else ctx.lineTo(X(q.x), Y(q.y));
+    }
+    ctx.stroke();
+
+    var dotR = shown > 90 ? 2 : (shown > 40 ? 2.6 : 3.6);
+    for(i = 0; i < shown; i++){
+      var d = S.nodes[i];
+      if(!isFinite(d.y)) continue;
+      ctx.beginPath();
+      ctx.arc(X(d.x), Y(d.y), dotR, 0, Math.PI * 2);
+      ctx.fillStyle = (i === 0) ? '#5A78B4' : '#FFFDF6';
+      ctx.fill();
+      ctx.strokeStyle = '#5A78B4';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+    }
+
+    /* hover callout */
+    if(S.hover >= 0 && S.hover < shown){
+      var hv = S.nodes[S.hover];
+      if(isFinite(hv.y)){
+        var hx = X(hv.x), hy = Y(hv.y);
+        ctx.beginPath();
+        ctx.arc(hx, hy, 7, 0, Math.PI * 2);
+        ctx.strokeStyle = '#5A78B4';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+        var label = 'n=' + S.hover + '   (' + fmt(hv.x, 3) + ', ' + fmt(hv.y, 3) + ')';
+        ctx.font = '11px "DM Mono", monospace';
+        var tw = ctx.measureText(label).width + 16,
+            bx = Math.min(Math.max(hx - tw / 2, left + 2), right - tw - 2),
+            by = hy - 32 < top + 2 ? hy + 14 : hy - 32;
+        ctx.fillStyle = '#2E2B33';
+        ctx.fillRect(bx, by, tw, 22);
+        ctx.fillStyle = '#FBF7EC';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, bx + 8, by + 12);
+      }
+    }
+  }
+
+  /* ---------------- run ---------------- */
+  function warn(msg){
+    if(msg){ el.alert.innerHTML = msg; el.alert.hidden = false; }
+    else { el.alert.hidden = true; el.alert.textContent = ''; }
+  }
+
+  function buildTable(){
+    var rows = [], cap = 200, n = S.nodes.length - 1, i, nd, nx, rv, drift, h = S.h;
+    for(i = 0; i < Math.min(n, cap); i++){
+      nd = S.nodes[i];
+      nx = S.nodes[i + 1];
+      rv = refAt(S.ref, nx.x);
+      drift = (isFinite(rv) && isFinite(nx.y)) ? Math.abs(nx.y - rv) : NaN;
+      rows.push('<tr data-i="' + i + '"><td>' + i + '</td><td>' + fmt(nd.x, 4) + '</td><td>' + fmt(nd.y, 4) +
+        '</td><td>' + fmt(nd.m, 4) + '</td><td>' + fmt(isFinite(nd.m) ? h * nd.m : NaN, 4) + '</td><td>' + fmt(nx.y, 4) +
+        '</td><td>' + fmt(rv, 4) + '</td><td class="drift">' + fmt(drift, 4) + '</td></tr>');
+    }
+    el.tbody.innerHTML = rows.join('');
+    el.tnote.innerHTML = (n > cap)
+      ? 'Showing the first ' + cap + ' of ' + n + ' steps. Each row is one step: read the slope, multiply by <var>h</var>, add it on.'
+      : 'Each row is one step of the walk: read the slope, multiply by <var>h</var>, add it on.';
+  }
+
+  function highlight(i){
+    var prev = el.tbody.querySelector('tr.on');
+    if(prev) prev.classList.remove('on');
+    if(i >= 0){
+      var row = el.tbody.querySelector('tr[data-i="' + i + '"]');
+      if(row) row.classList.add('on');
+    }
+  }
+
+  function update(animate){
+    var src = el.fx.value.trim(),
+        x0 = parseFloat(el.x0.value),
+        y0 = parseFloat(el.y0.value),
+        h  = parseFloat(el.h.value),
+        n  = Math.round(parseFloat(el.steps.value));
+
+    if(!src){ warn('Type a rate of change to plot, for example <code>y - x^2 + 1</code>.'); return; }
+    var f;
+    try { f = compile(src); }
+    catch(e){ warn('That derivative will not parse: ' + e.message + '.'); return; }
+    try {
+      var probe = f(isFinite(x0) ? x0 : 0, isFinite(y0) ? y0 : 0);
+      if(typeof probe !== 'number'){ throw new Error('it does not evaluate to a number'); }
+    } catch(e2){ warn('That derivative will not evaluate: ' + e2.message + '.'); return; }
+
+    if(!isFinite(x0) || !isFinite(y0)){ warn('x&#8320; and y&#8320; both need a number &mdash; that is the point you start from.'); return; }
+    if(!isFinite(h) || h === 0){ warn('The step size <var>h</var> needs to be a non-zero number.'); return; }
+    if(!isFinite(n) || n < 1){ warn('Take at least one step.'); return; }
+    if(n > 500){ n = 500; el.steps.value = 500; }
+    warn(null);
+
+    S.f = f; S.h = h;
+    var walk = eulerWalk(f, x0, y0, h, n);
+    S.nodes = walk.nodes;
+
+    var last = S.nodes[S.nodes.length - 1],
+        span = last.x - x0,
+        refCount = Math.max(60, Math.min(4000, n * 40));
+    S.ref = (span !== 0) ? rk4(f, x0, y0, span, refCount) : null;
+
+    /* view window */
+    var xs = [x0, last.x], ys = [], i, v;
+    for(i = 0; i < S.nodes.length; i++){ v = S.nodes[i].y; if(isFinite(v) && Math.abs(v) < BIG) ys.push(v); }
+    if(S.ref){
+      var soft = Math.max(Math.abs(y0) * 40 + 40, 1e3);
+      for(i = 0; i < S.ref.pts.length; i++){
+        v = S.ref.pts[i].y;
+        if(isFinite(v) && Math.abs(v) < soft) ys.push(v);
+      }
+    }
+    if(!ys.length) ys = [y0, y0 + 1];
+    var ymin = Math.min.apply(null, ys), ymax = Math.max.apply(null, ys),
+        xmin = Math.min(xs[0], xs[1]), xmax = Math.max(xs[0], xs[1]);
+    if(xmax - xmin < 1e-9){ xmin -= 0.5; xmax += 0.5; }
+    if(ymax - ymin < 1e-9){ ymin -= 1; ymax += 1; }
+    var padY = (ymax - ymin) * 0.12, padX = (xmax - xmin) * 0.04;
+    /* keep the origin at the centre of the plot */
+    var rx = Math.max(Math.abs(xmin - padX), Math.abs(xmax + padX)),
+        ry = Math.max(Math.abs(ymin - padY), Math.abs(ymax + padY));
+    S.view = { xmin:-rx, xmax:rx, ymin:-ry, ymax:ry };
+
+    /* readouts */
+    var refEnd = refAt(S.ref, last.x),
+        err = (isFinite(refEnd) && isFinite(last.y)) ? Math.abs(last.y - refEnd) : NaN;
+    el.rInt.textContent = 'x = ' + fmt(x0, 3) + ' → ' + fmt(last.x, 3);
+    el.rEnd.textContent = fmt(last.y, 5);
+    el.rTrue.textContent = fmt(refEnd, 5);
+    el.rErr.textContent = fmt(err, 5);
+
+    if(walk.stopped){
+      warn('The walk ran off to infinity before step ' + n + '. That is a real feature of this equation, not a bug &mdash; the solution blows up at a finite x. Try a smaller <var>h</var> or fewer steps.');
+    }
+
+    buildTable();
+    S.hover = -1;
+    highlight(-1);
+
+    if(animate && !reduced && S.nodes.length > 2){
+      if(raf) cancelAnimationFrame(raf);
+      var t0 = performance.now(), dur = Math.min(1400, 260 + S.nodes.length * 45);
+      S.reveal = 0;
+      (function tick(now){
+        var p = Math.min(1, (now - t0) / dur);
+        S.reveal = 1 - Math.pow(1 - p, 2);
+        draw();
+        if(p < 1) raf = requestAnimationFrame(tick); else raf = 0;
+      })(t0);
+    } else {
+      S.reveal = 1;
+      draw();
+    }
+  }
+
+  /* ---------------- events ---------------- */
+  ['input', 'change'].forEach(function(evt){
+    [el.fx, el.x0, el.y0, el.h, el.steps].forEach(function(node){
+      node.addEventListener(evt, function(){ update(false); });
+    });
+  });
+  el.run.addEventListener('click', function(){ update(true); });
+  el.halve.addEventListener('click', function(){
+    var h = parseFloat(el.h.value), n = Math.round(parseFloat(el.steps.value));
+    if(!isFinite(h) || h === 0 || !isFinite(n)) return;
+    el.h.value = String(parseFloat((h / 2).toPrecision(12)));
+    el.steps.value = String(Math.min(500, n * 2));
+    update(true);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(chip){
+    chip.addEventListener('click', function(){
+      el.fx.value = chip.getAttribute('data-f');
+      el.x0.value = chip.getAttribute('data-x0');
+      el.y0.value = chip.getAttribute('data-y0');
+      el.h.value  = chip.getAttribute('data-h');
+      el.steps.value = chip.getAttribute('data-n');
+      update(true);
+    });
+  });
+
+  el.canvas.addEventListener('mousemove', function(ev){
+    if(!S.view || !S.nodes.length) return;
+    var r = el.canvas.getBoundingClientRect(),
+        mx = ev.clientX - r.left, my = ev.clientY - r.top,
+        best = -1, bestD = 26 * 26, i, dx, dy, d;
+    for(i = 0; i < S.nodes.length; i++){
+      if(!isFinite(S.nodes[i].y)) continue;
+      dx = X(S.nodes[i].x) - mx; dy = Y(S.nodes[i].y) - my;
+      d = dx * dx + dy * dy;
+      if(d < bestD){ bestD = d; best = i; }
+    }
+    if(best !== S.hover){
+      S.hover = best;
+      highlight(best < S.nodes.length - 1 ? best : -1);
+      draw();
+    }
+  });
+  el.canvas.addEventListener('mouseleave', function(){
+    if(S.hover !== -1){ S.hover = -1; highlight(-1); draw(); }
+  });
+
+  var resizeTimer = 0;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){ sizeCanvas(); draw(); }, 120);
+  });
+
+  function boot(){
+    sizeCanvas();
+    update(true);
+  }
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ sizeCanvas(); draw(); });
+  }
+  boot();
+})();
+</script>
+</body></html>

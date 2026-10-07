@@ -1,0 +1,13 @@
+{
+  // Static-assets-only Worker serving everything under schmebb.com/Interactive
+  "name": "interactive-mam103x",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "routes": [
+    { "pattern": "schmebb.com/Interactive*", "zone_name": "schmebb.com" }
+  ]
+}

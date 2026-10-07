@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Exponential equations on the Argand diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  /* light ivory paper with pastel tints */
+  --paper:#FBF7EC; --sheet:#FFFDF7; --ink:#2F2A23; --ink-2:#6C6354; --rule:#E7DECB; --grid:#EEE7D7;
+  --z:#4E6FB2; --sol:#B5587E; --tgt:#3E8E80; --ok:#3B8468; --soft:#F3EDDE;
+  --tint-blue:#E7EDF8; --tint-rose:#FAE9EF; --tint-mint:#E4F1ED; --tint-lilac:#F0EBF8;
+  --wash-1:rgba(176,199,236,.30); --wash-2:rgba(234,197,214,.28); --wash-3:rgba(186,222,212,.22);
+  --serif:"Literata", Georgia, "Times New Roman", serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.7;
+  background-image:
+    radial-gradient(900px 520px at 10% -6%, var(--wash-1), transparent 70%),
+    radial-gradient(760px 480px at 96% 6%, var(--wash-2), transparent 70%),
+    radial-gradient(700px 500px at 50% 104%, var(--wash-3), transparent 70%),
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:auto,auto,auto,28px 28px,28px 28px;
+  background-attachment:fixed,fixed,fixed,scroll,scroll;}
+main{max-width:760px;margin:0 auto;padding:48px 20px 96px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,44px);line-height:1.15;margin:0 0 8px;letter-spacing:-0.01em}
+h2{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.3;margin:56px 0 12px}
+h3{font-family:var(--sans);font-weight:600;font-size:17px;margin:28px 0 6px}
+p{margin:0 0 14px}
+.lede{font-family:var(--sans);color:var(--ink-2);font-size:17px;margin-bottom:28px}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:20px 22px;margin:18px 0;
+  box-shadow:0 1px 2px rgba(120,104,72,.05),0 8px 24px -16px rgba(120,104,72,.18)}
+.sheet.part:nth-of-type(odd){background:linear-gradient(180deg,var(--tint-blue),var(--sheet) 120px)}
+.sheet.part:nth-of-type(even){background:linear-gradient(180deg,var(--tint-rose),var(--sheet) 120px)}
+button{font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--ink-2)}
+button:focus-visible,svg:focus-visible,a:focus-visible{outline:2px solid var(--z);outline-offset:2px}
+button[aria-pressed="true"]{border-color:var(--z);color:var(--z);font-weight:500}
+.partbtns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.planes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.cap{font-family:var(--sans);font-size:14px;color:var(--ink-2);margin-bottom:4px}
+.eqline{font-size:22px;margin:4px 0 12px}
+.readout{font-family:var(--sans);font-size:15px;font-variant-numeric:tabular-nums;margin-top:12px}
+.hit{font-family:var(--sans);font-size:15px;min-height:24px;margin:6px 0 10px;color:var(--ink-2)}
+.hit.yes{color:var(--ok);font-weight:500}
+.legend{font-family:var(--sans);font-size:14px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:16px;margin-top:10px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+svg .g{stroke:var(--grid);stroke-width:.6}
+svg .ax{stroke:var(--ink-2);stroke-width:1}
+svg .lbl{fill:var(--ink-2);font-family:var(--sans);font-size:11px}
+svg .sol{fill:var(--sol)}
+svg .solline{stroke:var(--sol);stroke-width:2.5}
+svg .zp{fill:var(--z)}
+svg .out{fill:var(--sol)}
+svg .tgt{fill:none;stroke:var(--tgt);stroke-width:2.5}
+ol.steps{padding-left:22px;margin:8px 0 14px}
+ol.steps li{margin-bottom:8px}
+.result{border-left:3px solid var(--sol);padding:4px 0 4px 16px;margin:12px 0}
+.part{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:start}
+@media (max-width:640px){.part{grid-template-columns:minmax(0,1fr)}}
+.mini{width:100%;max-width:200px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--ink-2)}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;background:var(--soft);padding:2px 5px;border-radius:4px;white-space:nowrap}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+nav.toc{font-family:var(--sans);font-size:15px;display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 8px}
+nav.toc a{color:var(--z);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+
+/* ---- Plot complex numbers ---- */
+.plotter{background:linear-gradient(180deg,var(--tint-mint),var(--sheet) 160px)}
+.plotter h2{margin:0 0 6px}
+.plotter .lede{margin-bottom:16px}
+.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;font-family:var(--sans);font-size:15px}
+.ctrl-label{color:var(--ink-2)}
+#zin{font-family:var(--sans);font-size:17px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);
+  border-radius:6px;padding:7px 11px;width:min(260px,100%);font-variant-numeric:tabular-nums}
+#zin:focus-visible{outline:2px solid var(--z);outline-offset:1px}
+.note{font-family:var(--sans);font-size:13px;color:var(--ink-2)}
+.err{font-family:var(--sans);font-size:14px;color:var(--sol);min-height:21px;margin:0 0 8px}
+.nstep{display:inline-flex;align-items:center;gap:6px}
+.nstep button{padding:2px 9px;line-height:1.4}
+.nstep output{font-variant-numeric:tabular-nums;min-width:14px;text-align:center;font-weight:500}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.presets button{font-size:14px;padding:4px 10px;background:var(--tint-lilac)}
+.facts{font-family:var(--sans);font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink-2);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:4px 18px;margin:12px 0 4px}
+.facts b{color:var(--ink);font-weight:500}
+.sollist{list-style:none;padding:0;margin:10px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:8px}
+.sollist button{display:block;width:100%;text-align:left;font-size:14px;line-height:1.45;padding:7px 10px;
+  background:var(--tint-rose);font-variant-numeric:tabular-nums}
+.sollist button[aria-pressed="true"]{border-color:var(--sol);color:var(--ink)}
+.sollist .kk{color:var(--sol);font-weight:600}
+.sollist .pol{display:block;color:var(--ink-2);font-size:13px}
+.check{font-family:var(--sans);font-size:15px;font-variant-numeric:tabular-nums;margin:12px 0 0;color:var(--ok);min-height:23px}
+svg .ring{fill:none;stroke:var(--tgt);stroke-width:1.6;stroke-dasharray:4 4}
+svg .ray{stroke:var(--sol);stroke-width:1;opacity:.5}
+svg .zray{stroke:var(--z);stroke-width:1.2;opacity:.55}
+svg .arc{fill:none;stroke:var(--z);stroke-width:1.2}
+svg .thin{stroke:var(--sol);stroke-width:1.6;stroke-dasharray:5 4}
+svg .pick{fill:none;stroke:var(--ink);stroke-width:1.6}
+svg .klbl{fill:var(--sol);font-family:var(--sans);font-size:10px}
+svg .zlbl{fill:var(--z);font-family:var(--sans);font-size:12px;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Exponential equations on the Argand diagram</h1>
+<p class="lede">Question 9, parts (a) to (g). Drag the blue point, watch where it lands, then read how each answer is worked out.</p>
+<nav class="toc" aria-label="Sections">
+  <a href="#plotter">Plot complex numbers</a><a href="#idea">The one idea</a><a href="#points">Why points</a><a href="#parts">Parts a to g</a><a href="#pik">Why πk in (a)</a><a href="#desmos">Desmos</a><a href="#summary">Summary</a>
+</nav>
+
+<div class="sheet plotter" id="plotter">
+  <h2 id="plot">Plot complex numbers</h2>
+  <p class="lede">Type any complex number on the left and its solutions appear on the right: either the \(n\) numbers whose \(n\)th power is \(z\), or the exponents \(w\) with \(e^{w} = z\). You can also drag the point.</p>
+
+  <div class="ctrl">
+    <label class="ctrl-label" for="zin">z =</label>
+    <input id="zin" type="text" value="1 + i" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="zhelp">
+    <span class="note" id="zhelp">accepts <code>-2</code>, <code>1-i</code>, <code>sqrt(2)+3i</code>, <code>2e^(i pi/3)</code></span>
+  </div>
+  <div class="err" id="perr" aria-live="polite"></div>
+
+  <div class="presets" id="ppre" role="group" aria-label="Examples"></div>
+
+  <div class="ctrl">
+    <span class="ctrl-label">Solve for</span>
+    <button id="mroot" aria-pressed="true">wⁿ = z</button>
+    <button id="mlog" aria-pressed="false">e<sup>w</sup> = z</button>
+    <span class="nstep" id="nwrap"><span class="ctrl-label">n =</span>
+      <button id="ndn" aria-label="decrease n">−</button><output id="nval">3</output><button id="nup" aria-label="increase n">+</button></span>
+  </div>
+
+  <div class="planes">
+    <div><div class="cap">Your number \(z\). Drag the blue point, or focus it and use arrow keys.</div>
+      <svg id="PL" viewBox="0 0 300 300" width="100%" tabindex="0" role="img" aria-label="plane showing z" style="touch-action:none;cursor:crosshair;display:block"></svg></div>
+    <div><div class="cap" id="ptitle">Solutions</div>
+      <svg id="PR" viewBox="0 0 300 300" width="100%" role="img" aria-label="plane showing the solutions" style="display:block"></svg></div>
+  </div>
+
+  <div class="eqline" id="peq"></div>
+  <div class="facts" id="pfacts"></div>
+  <ul class="sollist" id="plist"></ul>
+  <div class="check" id="pcheck" aria-live="polite"></div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--z)"></span>your z</span>
+    <span><span class="dot" style="background:var(--sol)"></span>the solutions</span>
+    <span><span class="dot" style="border:2px dashed var(--tgt);width:13px;height:13px"></span>circle they sit on</span>
+  </div>
+</div>
+
+<div class="sheet" id="explorer">
+  <div class="partbtns" id="btns" role="group" aria-label="Choose a part"></div>
+  <div class="eqline" id="eq"></div>
+  <div class="planes">
+    <div><div class="cap">Input: the z-plane. Drag the blue point, or focus it and use arrow keys.</div>
+      <svg id="L" viewBox="0 0 300 300" width="100%" tabindex="0" role="img" aria-label="z-plane" style="touch-action:none;cursor:crosshair;display:block"></svg></div>
+    <div><div class="cap" id="rtitle">Output plane</div>
+      <svg id="R" viewBox="0 0 300 300" width="100%" role="img" aria-label="output plane" style="display:block"></svg></div>
+  </div>
+  <div class="readout" id="read"></div>
+  <div class="hit" id="hit" aria-live="polite"></div>
+  <button id="jump">Jump to next solution</button>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--z)"></span>your z</span>
+    <span><span class="dot" style="background:var(--sol)"></span>solutions (left) and output (right)</span>
+    <span><span class="dot" style="border:2px solid var(--tgt)"></span>target value</span>
+  </div>
+</div>
+
+<h2 id="idea">The one idea behind every part</h2>
+<p>Write the exponent as \(w = u + iv\). Then</p>
+\[e^{w} = e^{u}\,e^{iv},\]
+<p>which is a complex number with modulus \(e^{u}\) and argument \(v\). So to solve \(e^{w} = re^{i\theta}\), match the two pieces:</p>
+<ul>
+  <li><strong>Modulus:</strong> \(e^{u} = r\), so \(u = \ln r\). One answer, because the real exponential is one-to-one.</li>
+  <li><strong>Argument:</strong> \(v = \theta + 2\pi k\). Infinitely many answers, because adding a full turn lands on the same point.</li>
+</ul>
+\[e^{w} = re^{i\theta} \iff w = \ln r + i(\theta + 2\pi k),\quad k\in\mathbb{Z}.\]
+<p>Every part follows the same recipe: write the right-hand side in polar form, solve for the whole exponent \(w\), then solve for \(z\). The interesting behaviour happens in the last step.</p>
+
+<h2 id="points">Why the solutions are points</h2>
+<p>An equation like \(e^{2iz} = -2\) asks the output to land on one exact spot. That means getting two things right at once:</p>
+<ul>
+  <li><strong>The distance from the origin</strong> (the modulus). In (a) this depends only on the height \(y\), so it fixes \(y = -\tfrac{\ln 2}{2}\).</li>
+  <li><strong>The direction</strong> (the angle). In (a) this depends only on \(x\), so it fixes \(x = \tfrac{\pi}{2}\).</li>
+</ul>
+<p>Two conditions pin down both coordinates, which gives a single point. It's the same reason that "\(x = 1\) and \(y = 2\)" describes a point, while "\(x = 1\)" alone describes a line.</p>
+<p>There are infinitely many points because the angle wraps around. Once the direction is right, moving \(x\) further by \(\pi\) spins the output one full turn back to the same spot. In the explorer, drag \(z\) sideways along the row in (a) and watch the output circle the origin.</p>
+<p>The odd ones out follow from the same logic. Part (e) only asks for the distance to be 2, so only \(x\) is fixed and you get a whole line. Part (f) can only output positive real numbers, so it never reaches \(i\).</p>
+
+<h2 id="parts">Parts a to g</h2>
+
+<section class="sheet part" data-part="a">
+  <div>
+    <h3>(a) \(e^{2iz} = -2\)</h3>
+    <ol class="steps">
+      <li>\(-2\) has modulus 2 and points left, so its argument is \(\pi\): \(-2 = 2e^{i\pi}\).</li>
+      <li>Match the exponent: \(2iz = \ln 2 + i(\pi + 2\pi k)\).</li>
+      <li>Divide by \(2i\). Since \(\tfrac1i = -i\), a real part \(a\) becomes \(-ia\) and an imaginary part \(ib\) becomes \(b\).</li>
+    </ol>
+    <div class="result">\[z = \frac{\pi}{2} + \pi k - \frac{i\ln 2}{2}\]</div>
+    <p>Before dividing, the solutions for \(w\) form a vertical column. Dividing by \(i\) rotates the plane by \(90^\circ\), turning the column into a row, and dividing by 2 halves the spacing. The result is a horizontal row at \(y \approx -0.35\), spaced \(\pi\) apart.</p>
+    <button data-open="a">Try (a) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="a" aria-label="Solutions for part a" role="img"></svg>
+</section>
+
+<section class="sheet part" data-part="b">
+  <div>
+    <h3>(b) \(e^{z} = 1\)</h3>
+    <ol class="steps">
+      <li>\(1\) has modulus 1 and argument 0.</li>
+      <li>The exponent is \(z\) itself, so \(z = \ln 1 + i(0 + 2\pi k)\).</li>
+    </ol>
+    <div class="result">\[z = 2\pi i k\]</div>
+    <p>Since \(\ln 1 = 0\), every solution is on the imaginary axis: \(0, \pm 2\pi i, \pm 4\pi i, \dots\) This is the periodicity fact in its purest form: \(e^z = 1\) exactly when \(z\) is a multiple of \(2\pi i\).</p>
+    <button data-open="b">Try (b) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="b" aria-label="Solutions for part b" role="img"></svg>
+</section>
+
+<section class="sheet part" data-part="c">
+  <div>
+    <h3>(c) \(e^{3z} = 1 + i\)</h3>
+    <ol class="steps">
+      <li>\(1+i\) has modulus \(\sqrt2\) and sits at \(45^\circ\): \(1+i = \sqrt2\,e^{i\pi/4}\).</li>
+      <li>Match the exponent: \(3z = \tfrac12\ln 2 + i\left(\tfrac{\pi}{4} + 2\pi k\right)\).</li>
+      <li>Divide by 3. A real number only scales, it doesn't rotate.</li>
+    </ol>
+    <div class="result">\[z = \frac{\ln 2}{6} + i\left(\frac{\pi}{12} + \frac{2\pi k}{3}\right)\]</div>
+    <p>A vertical column like (b), shifted right to \(x \approx 0.12\), with spacing \(\tfrac{2\pi}{3}\) instead of \(2\pi\).</p>
+    <button data-open="c">Try (c) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="c" aria-label="Solutions for part c" role="img"></svg>
+</section>
+
+<section class="sheet part" data-part="d">
+  <div>
+    <h3>(d) \(e^{iz} = 1 - i\)</h3>
+    <ol class="steps">
+      <li>\(1-i\) has modulus \(\sqrt2\) and sits at \(-45^\circ\): \(1-i = \sqrt2\,e^{-i\pi/4}\).</li>
+      <li>Match the exponent: \(iz = \tfrac{\ln 2}{2} + i\left(-\tfrac{\pi}{4} + 2\pi k\right)\).</li>
+      <li>Multiply by \(-i\), which is the same as dividing by \(i\).</li>
+    </ol>
+    <div class="result">\[z = -\frac{\pi}{4} + 2\pi k - \frac{i\ln 2}{2}\]</div>
+    <p>As in (a), the factor of \(i\) rotates the column into a row, at the same height \(y = -\tfrac{\ln 2}{2}\). There's no extra number multiplying \(i\), so the spacing stays \(2\pi\).</p>
+    <button data-open="d">Try (d) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="d" aria-label="Solutions for part d" role="img"></svg>
+</section>
+
+<section class="sheet part" data-part="e">
+  <div>
+    <h3>(e) \(|e^{z}| = 2\)</h3>
+    <p>This time you're only told the modulus. With \(z = x+iy\),</p>
+    \[|e^{z}| = |e^{x}|\,|e^{iy}| = e^{x}\cdot 1 = e^{x},\]
+    <p>because \(e^{iy}\) is always on the unit circle. So \(e^{x} = 2\), giving \(x = \ln 2\), with no condition on \(y\).</p>
+    <div class="result">\[\operatorname{Re} z = \ln 2\]</div>
+    <p>The whole vertical line at \(x \approx 0.69\). Knowing only the modulus fixes the real part and leaves the angle free. In the explorer, drag along the line and the output slides around the circle of radius 2.</p>
+    <button data-open="e">Try (e) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="e" aria-label="Solutions for part e" role="img"></svg>
+</section>
+
+<section class="sheet part" data-part="f">
+  <div>
+    <h3>(f) \(e^{|z|} = i\)</h3>
+    <p>The exponent \(|z|\) is always a real number that is 0 or greater, and the exponential of a real number is always a positive real number. But \(i\) has argument \(\tfrac{\pi}{2}\), while \(e^{|z|}\) always has argument 0.</p>
+    <div class="result"><p style="margin:0">No solutions. The diagram is empty.</p></div>
+    <p>The trap is to take logs blindly and write \(|z| = i\left(\tfrac{\pi}{2} + 2\pi k\right)\). The left side is real and the right side is purely imaginary and never 0, so that can't work.</p>
+    <button data-open="f">Try (f) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="f" aria-label="Part f has no solutions" role="img"></svg>
+</section>
+
+<section class="sheet part" data-part="g">
+  <div>
+    <h3>(g) \(\overline{e^{iz}} = e^{i\bar z}\)</h3>
+    <ol class="steps">
+      <li>Conjugation passes through the exponential: \(\overline{e^{w}} = e^{\bar w}\), because conjugating \(e^{u}(\cos v + i\sin v)\) flips the sign of \(\sin v\).</li>
+      <li>With \(w = iz\): \(\overline{iz} = \bar i\,\bar z = -i\bar z\). So the equation is \(e^{-i\bar z} = e^{i\bar z}\).</li>
+      <li>Multiply both sides by \(e^{i\bar z}\): \(e^{2i\bar z} = 1\).</li>
+      <li>By (b), \(2i\bar z = 2\pi i k\), so \(\bar z = \pi k\). That's real, so \(z = \pi k\).</li>
+    </ol>
+    <div class="result">\[z = \pi k\]</div>
+    <p>Points on the real axis at \(0, \pm\pi, \pm 2\pi, \dots\) Check \(z = \pi\): the left side is \(\overline{e^{i\pi}} = -1\) and the right side is \(e^{i\pi} = -1\).</p>
+    <button data-open="g">Try (g) in the explorer</button>
+  </div>
+  <svg class="mini" viewBox="0 0 300 300" data-mini="g" aria-label="Solutions for part g" role="img"></svg>
+</section>
+
+<h2 id="pik">Why (a) has \(\pi k\) and not \(2\pi k\)</h2>
+<p>Here is part (a) again, one operation per step.</p>
+<ol class="steps">
+  <li><strong>Polar form of \(-2\).</strong> Modulus 2, angle \(\pi\). You can go round any number of extra full turns and land on the same point, so the angle is \(\pi + 2\pi k\):
+  \[-2 = 2e^{i(\pi + 2\pi k)}.\] This is where the \(2\pi k\) enters. It describes the angle of \(-2\).</li>
+  <li><strong>Write 2 as an exponential.</strong> \(2 = e^{\ln 2}\), so \(-2 = e^{\ln 2 + i(\pi + 2\pi k)}\).</li>
+  <li><strong>Match exponents.</strong> \[2iz = \ln 2 + i\pi + 2\pi i k.\] The \(2\pi k\) is attached to \(2iz\), not to \(z\).</li>
+  <li><strong>Divide by 2.</strong> \[iz = \frac{\ln 2}{2} + \frac{i\pi}{2} + \pi i k.\] This is where \(2\pi k\) becomes \(\pi k\).</li>
+  <li><strong>Divide by \(i\)</strong> (multiply by \(-i\)), term by term:
+  \[\tfrac{\ln 2}{2}\cdot(-i) = -\tfrac{i\ln 2}{2},\qquad \tfrac{i\pi}{2}\cdot(-i) = \tfrac{\pi}{2},\qquad \pi i k\cdot(-i) = \pi k.\]
+  So \(z = \tfrac{\pi}{2} + \pi k - \tfrac{i\ln 2}{2}\).</li>
+</ol>
+<h3>Check with actual numbers</h3>
+<p>Take \(z_0 = \tfrac{\pi}{2} - \tfrac{i\ln 2}{2}\). Then \(2iz_0 = \ln 2 + i\pi\), so \(e^{2iz_0} = 2e^{i\pi} = -2\). Now move one step of \(\pi\): \(z_1 = z_0 + \pi\) gives \(2iz_1 = 2iz_0 + 2\pi i\), and \(e^{2\pi i} = 1\), so \(e^{2iz_1} = -2\) too. If you wrote \(2\pi k\), you'd miss \(z_1\).</p>
+<h3>The same thing in trig</h3>
+<p>Solving \(\cos(2x) = 1\) gives \(2x = 2\pi k\), so \(x = \pi k\). The exponent turns twice as fast as \(z\), so \(z\) only needs half the distance to complete a full cycle. In general, if the exponent is \(az\), the spacing is \(\tfrac{2\pi}{|a|}\).</p>
+
+<h2 id="desmos">Plotting in Desmos</h2>
+<p>Treat \(x + iy\) as the point \((x, y)\). First make a list of \(k\) values on its own line, then add one line per part. Desmos turns <code>pi</code> into \(\pi\) as you type.</p>
+<p><code>k = [-10...10]</code></p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Part</th><th>Solution</th><th>Type into Desmos</th></tr></thead>
+  <tbody>
+    <tr><td>(a)</td><td>\(\frac{\pi}{2} + \pi k - \frac{i\ln 2}{2}\)</td><td><code>(pi/2 + pi k, -ln(2)/2)</code></td></tr>
+    <tr><td>(b)</td><td>\(2\pi i k\)</td><td><code>(0, 2pi k)</code></td></tr>
+    <tr><td>(c)</td><td>\(\frac{\ln 2}{6} + i\left(\frac{\pi}{12} + \frac{2\pi k}{3}\right)\)</td><td><code>(ln(2)/6, pi/12 + 2pi k/3)</code></td></tr>
+    <tr><td>(d)</td><td>\(-\frac{\pi}{4} + 2\pi k - \frac{i\ln 2}{2}\)</td><td><code>(-pi/4 + 2pi k, -ln(2)/2)</code></td></tr>
+    <tr><td>(e)</td><td>\(\operatorname{Re} z = \ln 2\)</td><td><code>x = ln(2)</code></td></tr>
+    <tr><td>(f)</td><td>no solutions</td><td>nothing to plot</td></tr>
+    <tr><td>(g)</td><td>\(\pi k\)</td><td><code>(pi k, 0)</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="summary">Summary</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Exponent</th><th>Effect on the solution set</th></tr></thead>
+  <tbody>
+    <tr><td>\(z\)</td><td>Vertical column, spacing \(2\pi\)</td></tr>
+    <tr><td>\(az\), \(a\) real</td><td>Still vertical, spacing \(\tfrac{2\pi}{|a|}\)</td></tr>
+    <tr><td>\(iz\)</td><td>Rotated into a horizontal row</td></tr>
+    <tr><td>\(|e^z|\) only</td><td>Fixes \(x\) only, giving a whole line</td></tr>
+    <tr><td>Real exponent</td><td>Can only produce positive reals</td></tr>
+  </tbody>
+</table>
+</div>
+
+</main>
+
+<script>
+(function(){
+const P=Math.PI,L2=Math.log(2),NS="http://www.w3.org/2000/svg";
+const ce=(a,b)=>[Math.exp(a)*Math.cos(b),Math.exp(a)*Math.sin(b)];
+const ks=[];for(let k=-10;k<=10;k++)ks.push(k);
+const parts={
+  a:{eq:"e^{2iz} = -2",f:([x,y])=>ce(-2*y,2*x),t:[-2,0],s:ks.map(k=>[P/2+P*k,-L2/2]),out:"e^(2iz)"},
+  b:{eq:"e^{z} = 1",f:([x,y])=>ce(x,y),t:[1,0],s:ks.map(k=>[0,2*P*k]),out:"e^z"},
+  c:{eq:"e^{3z} = 1 + i",f:([x,y])=>ce(3*x,3*y),t:[1,1],s:ks.map(k=>[L2/6,P/12+2*P*k/3]),out:"e^(3z)"},
+  d:{eq:"e^{iz} = 1 - i",f:([x,y])=>ce(-y,x),t:[1,-1],s:ks.map(k=>[-P/4+2*P*k,-L2/2]),out:"e^(iz)"},
+  e:{eq:"|e^{z}| = 2",f:([x,y])=>ce(x,y),circle:2,line:L2,s:[-3,-2,-1,0,1,2,3].map(v=>[L2,v*1.5]),out:"e^z"},
+  f:{eq:"e^{|z|} = i",f:([x,y])=>[Math.exp(Math.hypot(x,y)),0],t:[0,1],s:[],out:"e^|z|"},
+  g:{eq:"\\overline{e^{iz}} = e^{i\\bar z}",f:([x,y])=>{const q=ce(-y,x);return[q[0],-q[1]];},f2:([x,y])=>ce(y,x),s:ks.map(k=>[P*k,0]),out:"left side"}
+};
+let cur="a",z=[1,0.5],ji=-1;
+const Ls=document.getElementById("L"),Rs=document.getElementById("R");
+function mk(svg,n,a,cls){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(cls)e.setAttribute("class",cls);svg.appendChild(e);return e;}
+function axes(svg,R,labels){
+  while(svg.firstChild)svg.removeChild(svg.firstChild);
+  const s=150/R;
+  for(let i=-Math.floor(R);i<=R;i++){mk(svg,"line",{x1:150+i*s,y1:0,x2:150+i*s,y2:300},"g");mk(svg,"line",{x1:0,y1:150-i*s,x2:300,y2:150-i*s},"g");}
+  mk(svg,"line",{x1:0,y1:150,x2:300,y2:150},"ax");mk(svg,"line",{x1:150,y1:0,x2:150,y2:300},"ax");
+  if(labels){
+    mk(svg,"text",{x:294,y:143,"text-anchor":"end"},"lbl").textContent="Re";
+    mk(svg,"text",{x:156,y:13},"lbl").textContent="Im";
+    const st=R>5?2:1;
+    for(let i=-Math.floor(R)+1;i<R;i++){if(i===0||i%st)continue;
+      mk(svg,"text",{x:150+i*s,y:164,"text-anchor":"middle"},"lbl").textContent=i;
+      mk(svg,"text",{x:145,y:150-i*s+4,"text-anchor":"end"},"lbl").textContent=i;}
+  }
+  return p=>[150+p[0]*s,150-p[1]*s];
+}
+function plotSolutions(svg,q,R,r){
+  const t=axes(svg,R,true);
+  if(q.line!==undefined){const X=t([q.line,0])[0];mk(svg,"line",{x1:X,y1:0,x2:X,y2:300},"solline");}
+  else q.s.filter(p=>Math.abs(p[0])<R&&Math.abs(p[1])<R).forEach(p=>{const c=t(p);mk(svg,"circle",{cx:c[0],cy:c[1],r:r},"sol");});
+  return t;
+}
+const LR=7,RR=4;
+const cl=(v,m)=>Math.max(-m,Math.min(m,v));
+const fmt=v=>(Math.abs(v)<0.005?0:v).toFixed(2);
+const cs=p=>fmt(p[0])+(p[1]<0?" − ":" + ")+fmt(Math.abs(p[1]))+"i";
+function tex(el,s){if(window.katex)katex.render(s,el,{throwOnError:false});else el.textContent=s;}
+function draw(){
+  const q=parts[cur];
+  const tl=plotSolutions(Ls,q,LR,4);
+  const zc=tl(z);mk(Ls,"circle",{cx:zc[0],cy:zc[1],r:7.5},"zp");
+  const tr=axes(Rs,RR,true);
+  const w=q.f(z);let ok=false,txt;
+  if(q.circle){mk(Rs,"circle",{cx:150,cy:150,r:q.circle*150/RR},"tgt");ok=Math.abs(Math.hypot(w[0],w[1])-2)<0.06;}
+  else if(q.t){const t=tr(q.t);mk(Rs,"circle",{cx:t[0],cy:t[1],r:9},"tgt");ok=Math.hypot(w[0]-q.t[0],w[1]-q.t[1])<0.08;}
+  if(q.f2){const w2=q.f2(z);const c2=tr([cl(w2[0],RR),cl(w2[1],RR)]);mk(Rs,"circle",{cx:c2[0],cy:c2[1],r:8},"tgt");
+    ok=Math.hypot(w[0]-w2[0],w[1]-w2[1])<0.08;txt="z = "+cs(z)+"    left side = "+cs(w)+"    right side = "+cs(w2);}
+  else txt="z = "+cs(z)+"    "+q.out+" = "+cs(w);
+  const off=Math.abs(w[0])>RR||Math.abs(w[1])>RR;
+  const wc=tr([cl(w[0],RR),cl(w[1],RR)]);mk(Rs,"circle",{cx:wc[0],cy:wc[1],r:6.5},"out");
+  document.getElementById("read").textContent=txt+(off?"   (output is off the edge)":"");
+  tex(document.getElementById("eq"),"\\text{("+cur+")}\\quad "+q.eq);
+  document.getElementById("rtitle").textContent=q.f2?"Output plane: filled dot is the left side, ring is the right side.":"Output plane: filled dot is "+q.out+", ring is the target.";
+  const h=document.getElementById("hit");
+  if(ok){h.className="hit yes";h.textContent="This z is a solution. The output hits the target.";}
+  else{h.className="hit";h.textContent=cur==="f"?"The output is stuck on the positive real axis, so it can never reach i.":"Not a solution yet. Move z until the filled dot lands on the ring.";}
+  document.querySelectorAll("#btns button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===cur?"true":"false"));
+}
+function toZ(ev){const pt=Ls.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(Ls.getScreenCTM().inverse());return[cl((p.x-150)*LR/150,LR),cl((150-p.y)*LR/150,LR)];}
+let drag=false;
+Ls.addEventListener("pointerdown",e=>{drag=true;Ls.setPointerCapture(e.pointerId);z=toZ(e);draw();});
+Ls.addEventListener("pointermove",e=>{if(drag){z=toZ(e);draw();}});
+Ls.addEventListener("pointerup",()=>{drag=false;});
+Ls.addEventListener("keydown",e=>{const st=e.shiftKey?0.01:0.1;const m={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,st],ArrowDown:[0,-st]}[e.key];
+  if(m){e.preventDefault();z=[cl(z[0]+m[0],LR),cl(z[1]+m[1],LR)];draw();}});
+document.getElementById("jump").addEventListener("click",()=>{
+  const s=parts[cur].s.filter(p=>Math.abs(p[0])<LR-0.3&&Math.abs(p[1])<LR-0.3);
+  if(!s.length){document.getElementById("hit").textContent="Part (f) has no solutions to jump to.";return;}
+  ji=(ji+1)%s.length;z=s[ji].slice();draw();});
+const bw=document.getElementById("btns");
+Object.keys(parts).forEach(p=>{const b=document.createElement("button");b.textContent="("+p+")";b.dataset.p=p;
+  b.addEventListener("click",()=>{cur=p;ji=-1;draw();});bw.appendChild(b);});
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>{cur=b.dataset.open;ji=-1;draw();document.getElementById("explorer").scrollIntoView();}));
+document.querySelectorAll("[data-mini]").forEach(svg=>{const q=parts[svg.dataset.mini];plotSolutions(svg,q,LR,5);
+  if(!q.s.length&&q.line===undefined)mk(svg,"text",{x:150,y:120,"text-anchor":"middle"},"lbl").textContent="no solutions";});
+draw();
+document.addEventListener("DOMContentLoaded",()=>{
+  if(window.renderMathInElement)renderMathInElement(document.body,{delimiters:[{left:"\\[",right:"\\]",display:true},{left:"\\(",right:"\\)",display:false}],throwOnError:false});
+  draw();
+});
+})();
+</script>
+<script>
+/* ---- Plot complex numbers: input, roots and logarithms ---- */
+(function(){
+const NS="http://www.w3.org/2000/svg",P=Math.PI;
+
+/* complex arithmetic */
+const C=(re,im)=>({re:re,im:im||0});
+const cAdd=(a,b)=>C(a.re+b.re,a.im+b.im);
+const cSub=(a,b)=>C(a.re-b.re,a.im-b.im);
+const cMul=(a,b)=>C(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re);
+const cDiv=(a,b)=>{const d=b.re*b.re+b.im*b.im;if(!d)throw new Error("you cannot divide by zero");
+  return C((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d);};
+const cAbs=a=>Math.hypot(a.re,a.im);
+const cArg=a=>Math.atan2(a.im,a.re);
+const cExp=a=>C(Math.exp(a.re)*Math.cos(a.im),Math.exp(a.re)*Math.sin(a.im));
+const cLog=a=>{const r=cAbs(a);if(!r)throw new Error("log of 0 is undefined");return C(Math.log(r),cArg(a));};
+const cPow=(a,b)=>{if(!a.re&&!a.im)return(!b.re&&!b.im)?C(1):C(0);return cExp(cMul(b,cLog(a)));};
+const cPowN=(a,m)=>{let r=C(1);for(let i=0;i<m;i++)r=cMul(r,a);return r;};
+
+/* parser: handles 1-i, sqrt(2)+3i, 2e^(i pi/3), ln(5), (1+i)/2, ... */
+const NAMES=["sqrt","exp","abs","ln","log","pi","i","e"];
+function lex(src){
+  const s=String(src).replace(/\s+/g,"").replace(/[−–—]/g,"-").replace(/[·×*]/g,"*");
+  const out=[];let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/[0-9.]/.test(c)){let j=i;while(j<s.length&&/[0-9.]/.test(s[j]))j++;
+      const v=parseFloat(s.slice(i,j));if(!isFinite(v))throw new Error('"'+s.slice(i,j)+'" is not a number');
+      out.push({t:"n",v:v});i=j;continue;}
+    if(/[a-z]/i.test(c)){let j=i;while(j<s.length&&/[a-z]/i.test(s[j]))j++;
+      let run=s.slice(i,j).toLowerCase();i=j;
+      while(run.length){const m=NAMES.filter(k=>run.indexOf(k)===0)[0];
+        if(!m)throw new Error('I do not know "'+run+'"');out.push({t:"id",v:m});run=run.slice(m.length);}
+      continue;}
+    if("+-*/^()".indexOf(c)>=0){out.push({t:c});i++;continue;}
+    throw new Error('unexpected character "'+c+'"');
+  }
+  return out;
+}
+function parse(toks){
+  let p=0;
+  const peek=()=>toks[p],eat=t=>{if(toks[p]&&toks[p].t===t){p++;return true}return false};
+  function expr(){let v=term();for(;;){if(eat("+"))v=cAdd(v,term());else if(eat("-"))v=cSub(v,term());else return v;}}
+  function term(){let v=unary();for(;;){
+    if(eat("*"))v=cMul(v,unary());
+    else if(eat("/"))v=cDiv(v,unary());
+    else if(peek()&&(peek().t==="n"||peek().t==="id"||peek().t==="("))v=cMul(v,unary());
+    else return v;}}
+  function unary(){if(eat("-"))return cMul(C(-1),unary());if(eat("+"))return unary();return power();}
+  function power(){const b=atom();if(eat("^"))return cPow(b,unary());return b;}
+  function atom(){
+    const t=peek();if(!t)throw new Error("the expression stops too soon");
+    if(t.t==="n"){p++;return C(t.v);}
+    if(t.t==="("){p++;const v=expr();if(!eat(")"))throw new Error("a closing bracket is missing");return v;}
+    if(t.t==="id"){p++;
+      if(t.v==="pi")return C(P);
+      if(t.v==="i")return C(0,1);
+      if(t.v==="e")return C(Math.E);
+      const f={sqrt:a=>cPow(a,C(0.5)),exp:cExp,ln:cLog,log:cLog,abs:a=>C(cAbs(a))}[t.v];
+      return f(power());
+    }
+    throw new Error("unexpected symbol");
+  }
+  const v=expr();
+  if(p<toks.length)throw new Error("I could not read the end of that");
+  return v;
+}
+function parseC(src){
+  if(!String(src).trim())throw new Error("type a complex number");
+  const v=parse(lex(src));
+  if(!isFinite(v.re)||!isFinite(v.im))throw new Error("that is not a finite number");
+  return v;
+}
+
+/* formatting */
+const fl=(v,d)=>{d=d===undefined?3:d;const x=Math.abs(v)<5e-7?0:v;let t=x.toFixed(d);
+  if(/^-0(\.0*)?$/.test(t))t=t.slice(1);return t;};
+const f=(v,d)=>fl(v,d).replace("-","−");
+const rect=(w,d)=>f(w.re,d)+(w.im<0?" − ":" + ")+f(Math.abs(w.im),d)+"i";
+const ascii=v=>{let t=(Math.abs(v)<5e-7?0:v).toFixed(3).replace(/\.?0+$/,"");return(t===""||t==="-")?"0":t;};
+const asciiC=w=>ascii(w.re)+(w.im<0?" - ":" + ")+ascii(Math.abs(w.im))+"i";
+const SUB="₀₁₂₃₄₅₆₇₈₉";
+const sub=k=>String(k).split("").map(c=>c==="-"?"₋":(SUB["0123456789".indexOf(c)]||c)).join("");
+function piFrac(t){
+  const ds=[1,2,3,4,6,8,12];
+  for(let j=0;j<ds.length;j++){const d=ds[j],num=t*d/P;
+    if(Math.abs(num-Math.round(num))<1e-9){const m=Math.round(num);
+      if(m===0)return "0";
+      const sg=m<0?"−":"",a=Math.abs(m),top=(a===1?"π":a+"π");
+      return sg+(d===1?top:top+"/"+d);}}
+  return null;
+}
+
+/* drawing */
+function mk(svg,name,at,cls){const e=document.createElementNS(NS,name);
+  for(const k in at)e.setAttribute(k,at[k]);if(cls)e.setAttribute("class",cls);svg.appendChild(e);return e;}
+const NICE=[1.5,2,3,4,5,6,8,10,12,15,20,25,30,40,50,80,120];
+function niceR(pts){
+  let m=0;for(let i=0;i<pts.length;i++)m=Math.max(m,Math.abs(pts[i].re),Math.abs(pts[i].im));
+  m*=1.22;for(let i=0;i<NICE.length;i++)if(NICE[i]>=m)return NICE[i];
+  return Math.ceil(m);
+}
+function axes(svg,R){
+  while(svg.firstChild)svg.removeChild(svg.firstChild);
+  const s=140/R, lab=R<=3?1:R<=8?2:R<=18?5:10, gs=R<=8?1:lab;
+  for(let i=-Math.floor(R/gs)*gs;i<=R+1e-9;i+=gs){
+    mk(svg,"line",{x1:150+i*s,y1:0,x2:150+i*s,y2:300},"g");
+    mk(svg,"line",{x1:0,y1:150-i*s,x2:300,y2:150-i*s},"g");}
+  mk(svg,"line",{x1:0,y1:150,x2:300,y2:150},"ax");
+  mk(svg,"line",{x1:150,y1:0,x2:150,y2:300},"ax");
+  mk(svg,"text",{x:296,y:143,"text-anchor":"end"},"lbl").textContent="Re";
+  mk(svg,"text",{x:155,y:12},"lbl").textContent="Im";
+  for(let i=-Math.floor(R/lab)*lab;i<=R+1e-9;i+=lab){
+    const v=Math.round(i*1e6)/1e6;if(v===0||Math.abs(v*s)>139)continue;
+    mk(svg,"text",{x:150+v*s,y:163,"text-anchor":"middle"},"lbl").textContent=v;
+    mk(svg,"text",{x:145,y:150-v*s+4,"text-anchor":"end"},"lbl").textContent=v;}
+  return (x,y)=>[150+x*s,150-y*s];
+}
+
+/* state */
+let z=C(1,1),mode="root",n=3,sel=0,LR=2,drag=false;
+const el=id=>document.getElementById(id);
+const PL=el("PL"),PR=el("PR"),zin=el("zin");
+
+function sols(){
+  const r=cAbs(z),a=cArg(z),out=[];
+  if(mode==="root"){
+    if(!r)return[{w:C(0),k:0}];
+    const rr=Math.pow(r,1/n);
+    for(let k=0;k<n;k++){const th=(a+2*P*k)/n;out.push({w:C(rr*Math.cos(th),rr*Math.sin(th)),k:k,th:th,r:rr});}
+    return out;
+  }
+  if(!r)return[];
+  const u=Math.log(r);
+  for(let k=-2;k<=2;k++)out.push({w:C(u,a+2*P*k),k:k});
+  return out;
+}
+function tex(e,s){if(window.katex){try{katex.render(s,e,{throwOnError:false});return;}catch(x){}}e.textContent=s;}
+
+function draw(){
+  const S=sols(),r=cAbs(z),a=cArg(z);
+  if(sel>=S.length)sel=S.length?S.length-1:0;
+
+  /* left plane: z itself */
+  if(!drag)LR=niceR([z,C(1)]);
+  const tl=axes(PL,LR);
+  if(r>0.02){
+    mk(PL,"circle",{cx:150,cy:150,r:r*140/LR},"ring");
+    const zc=tl(z.re,z.im);
+    mk(PL,"line",{x1:150,y1:150,x2:zc[0],y2:zc[1]},"zray");
+    const ar=28,e1=[150+ar,150],e2=[150+ar*Math.cos(a),150-ar*Math.sin(a)];
+    mk(PL,"path",{d:"M "+e1[0]+" "+e1[1]+" A "+ar+" "+ar+" 0 "+(Math.abs(a)>P?1:0)+" "+(a>0?0:1)+" "+e2[0]+" "+e2[1]},"arc");
+    mk(PL,"circle",{cx:zc[0],cy:zc[1],r:7},"zp");
+    mk(PL,"text",{x:zc[0]+11,y:zc[1]-9},"zlbl").textContent="z";
+  }else{
+    const zc=tl(z.re,z.im);mk(PL,"circle",{cx:zc[0],cy:zc[1],r:7},"zp");
+    mk(PL,"text",{x:zc[0]+11,y:zc[1]-9},"zlbl").textContent="z";
+  }
+
+  /* right plane: the solutions */
+  const RR=S.length?niceR(S.map(q=>q.w)):2;
+  const tr=axes(PR,RR);
+  if(!S.length){
+    mk(PR,"text",{x:150,y:120,"text-anchor":"middle"},"lbl").textContent="no solutions";
+  }else{
+    if(mode==="root"&&r>0){mk(PR,"circle",{cx:150,cy:150,r:S[0].r*140/RR},"ring");}
+    if(mode==="log"){const X=tr(S[0].w.re,0)[0];mk(PR,"line",{x1:X,y1:0,x2:X,y2:300},"thin");}
+    S.forEach((q,i)=>{
+      const c=tr(q.w.re,q.w.im);
+      if(mode==="root"&&r>0)mk(PR,"line",{x1:150,y1:150,x2:c[0],y2:c[1]},"ray");
+      mk(PR,"circle",{cx:c[0],cy:c[1],r:6},"sol");
+      if(i===sel)mk(PR,"circle",{cx:c[0],cy:c[1],r:10.5},"pick");
+      let lx,ly,an;
+      if(mode==="root"&&r>0){
+        const d=Math.hypot(q.w.re,q.w.im)||1;
+        lx=c[0]+16*q.w.re/d; ly=c[1]-16*q.w.im/d+4; an=q.w.re<-0.05?"end":(q.w.re>0.05?"start":"middle");
+      }else{lx=c[0]+15;ly=c[1]+4;an="start";}
+      mk(PR,"text",{x:lx,y:ly,"text-anchor":an},"klbl").textContent="k="+q.k;
+    });
+  }
+  el("ptitle").textContent = mode==="root"
+    ? (r? "Solutions of w^"+n+" = z: "+n+" of them, evenly spaced on a circle of radius |z|^(1/"+n+")"
+        : "Solutions of w^"+n+" = 0: just w = 0")
+    : (r? "Solutions of e^w = z: a vertical column, spacing 2π, shown for k = −2 … 2"
+        : "e^w is never 0, so there is nothing to plot");
+
+  /* equation line */
+  if(mode==="root"){
+    const klist = n<=5 ? Array.apply(null,{length:n}).map(function(v,i){return i;}).join(",")
+                       : "0,1,\\dots,"+(n-1);
+    tex(el("peq"), r
+      ? "w^{"+n+"} = "+texC(z)+" \\quad\\Longrightarrow\\quad w_k = "+fl(Math.pow(r,1/n),4)+
+        "\\,e^{i\\left("+fl(a,4)+" + 2\\pi k\\right)/"+n+"},\\quad k = "+klist
+      : "w^{"+n+"} = 0 \\quad\\Longrightarrow\\quad w = 0");
+  }else{
+    tex(el("peq"), r? "e^{w} = "+texC(z)+" \\quad\\Longrightarrow\\quad w_k = "+fl(Math.log(r),4)+
+      " + i\\left("+fl(a,4)+" + 2\\pi k\\right),\\quad k\\in\\mathbb{Z}"
+      : "e^{w} = 0 \\quad\\text{has no solutions}");
+  }
+
+  /* facts about z */
+  const pf=piFrac(a);
+  el("pfacts").innerHTML=
+    "<span><b>z</b> = "+rect(z)+"</span>"+
+    "<span><b>|z|</b> = "+f(r,4)+"</span>"+
+    "<span><b>arg z</b> = "+f(a,4)+" rad"+(pf?" = "+pf:"")+" = "+f(a*180/P,2)+"°</span>"+
+    "<span><b>polar</b> = "+f(r,3)+" e<sup>"+f(a,3)+"i</sup></span>"+
+    "<span><b>conjugate</b> = "+rect(C(z.re,-z.im))+"</span>"+
+    "<span><b>z²</b> = "+rect(cMul(z,z))+"</span>";
+
+  /* solution chips */
+  const ul=el("plist");ul.innerHTML="";
+  S.forEach((q,i)=>{
+    const li=document.createElement("li"),b=document.createElement("button");
+    const th=cArg(q.w),pf2=piFrac(th);
+    b.setAttribute("aria-pressed",i===sel?"true":"false");
+    b.innerHTML="<span class='kk'>w"+sub(q.k)+"</span> = "+rect(q.w,4)+
+      "<span class='pol'>|w| = "+f(cAbs(q.w),3)+",  arg = "+f(th,3)+(pf2?" ("+pf2+")":"")+"</span>";
+    b.addEventListener("click",()=>{sel=i;draw();});
+    li.appendChild(b);ul.appendChild(li);
+  });
+
+  /* check the selected solution */
+  const ck=el("pcheck");
+  if(S.length){
+    const q=S[sel],got=mode==="root"?cPowN(q.w,n):cExp(q.w);
+    const near=cAbs(cSub(got,z))<1e-6*Math.max(1,cAbs(z))+1e-9;
+    ck.textContent=(mode==="root"?"(w"+sub(q.k)+")^"+n:"e^(w"+sub(q.k)+")")+
+      " = "+rect(got,4)+(near?"  — back to z, so it checks out.":"");
+  }else ck.textContent="";
+}
+function texC(w){
+  const re=fl(w.re,4),im=fl(Math.abs(w.im),4);
+  if(Math.abs(w.im)<5e-7)return re;
+  if(Math.abs(w.re)<5e-7)return (w.im<0?"-":"")+(im==="1"?"i":im+"i");
+  return re+(w.im<0?" - ":" + ")+(im==="1"?"i":im+"i");
+}
+
+/* input */
+function readInput(write){
+  try{
+    const v=parseC(zin.value);
+    z=v;el("perr").textContent="";
+    if(write)zin.value=asciiC(z);
+    draw();
+  }catch(e){el("perr").textContent=e.message;}
+}
+zin.addEventListener("input",()=>readInput(false));
+zin.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();readInput(true);}});
+function setZ(w,write){z=w;if(write!==false)zin.value=asciiC(z);el("perr").textContent="";draw();}
+
+/* drag and keys on the left plane */
+function toZ(ev){
+  const pt=PL.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;
+  const p=pt.matrixTransform(PL.getScreenCTM().inverse());
+  const s=140/LR,cl=v=>Math.max(-LR,Math.min(LR,v));
+  const q=0.001;
+  return C(Math.round(cl((p.x-150)/s)/q)*q,Math.round(cl((150-p.y)/s)/q)*q);
+}
+PL.addEventListener("pointerdown",e=>{drag=true;PL.setPointerCapture(e.pointerId);setZ(toZ(e));});
+PL.addEventListener("pointermove",e=>{if(drag)setZ(toZ(e));});
+PL.addEventListener("pointerup",()=>{drag=false;draw();});
+PL.addEventListener("pointercancel",()=>{drag=false;draw();});
+PL.addEventListener("keydown",e=>{
+  const st=e.shiftKey?0.01:0.1;
+  const m={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,st],ArrowDown:[0,-st]}[e.key];
+  if(!m)return;e.preventDefault();
+  const cl=v=>Math.max(-LR,Math.min(LR,Math.round(v*1000)/1000));
+  setZ(C(cl(z.re+m[0]),cl(z.im+m[1])));
+});
+
+/* mode, n, presets */
+function setMode(m){mode=m;sel=mode==="log"?2:0;
+  el("mroot").setAttribute("aria-pressed",m==="root"?"true":"false");
+  el("mlog").setAttribute("aria-pressed",m==="log"?"true":"false");
+  el("nwrap").style.display=m==="root"?"inline-flex":"none";draw();}
+el("mroot").addEventListener("click",()=>setMode("root"));
+el("mlog").addEventListener("click",()=>setMode("log"));
+el("nup").addEventListener("click",()=>{n=Math.min(12,n+1);el("nval").value=n;sel=0;draw();});
+el("ndn").addEventListener("click",()=>{n=Math.max(2,n-1);el("nval").value=n;sel=0;draw();});
+[["1+i","1 + i"],["-2","-2"],["i","i"],["-8","-8"],["2e^(i pi/3)","2e^(i pi/3)"],["1","1"],["3-4i","3 - 4i"],["sqrt(2)+sqrt(2)i","sqrt(2) + sqrt(2)i"]]
+  .forEach(pr=>{const b=document.createElement("button");b.textContent=pr[0];
+    b.addEventListener("click",()=>{zin.value=pr[1];readInput(false);});el("ppre").appendChild(b);});
+
+el("nval").value=n;
+setMode("root");
+readInput(false);
+document.addEventListener("DOMContentLoaded",()=>{el("nval").value=n;draw();});
+window.addEventListener("load",()=>{el("nval").value=n;draw();});
+})();
+</script>
+</body>
+
+</html>

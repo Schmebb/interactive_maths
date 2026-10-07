@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Row Echelon Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+html, body { margin: 0; }
+.back { font: 700 0.85rem/1 var(--f-body); color: var(--muted); text-decoration: none; display: inline-flex; gap: 6px; margin-bottom: 10px; }
+.back:hover { color: var(--accent); }
+
+/* Layout: graph-paper bench — equations on the left, the live matrix and its step log on the right */
+:root {
+  /* single light look: ivory ground, pastel surfaces */
+  --paper: #fbf7ea;
+  --field: #fffdf6;
+  --mint: #e3f3ea;
+  --lilac: #ece8fa;
+  --peach: #fdeadf;
+  --sky: #e2eefa;
+  --butter: #fbf1cc;
+  --ink: #2a2a35;
+  --muted: #6b6878;
+  --line: #e6dfcb;
+  --grid: rgba(150, 130, 90, 0.07);
+  --accent: #7867cf;
+  --accent-ink: #2a2a35;
+  --hi: #fff0b3;
+  --good: #2f7a52;
+  --warn: #93621a;
+  --bad: #b23a33;
+  --chip: #f3eedd;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-math: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font: 16px/1.5 var(--f-body);
+  padding-inline: 16px;
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+header h1 { font: 700 clamp(1.7rem, 4vw, 2.4rem)/1.1 var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.layout { display: grid; gap: 20px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 900px) { .layout { grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); } }
+.panel { background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel.p-input { background: var(--mint); border-color: #cfe7d9; }
+.panel.p-bench { background: var(--lilac); border-color: #dcd6f4; }
+.panel.p-steps { background: var(--peach); border-color: #f5d9c8; }
+.label { font: 700 0.72rem/1 var(--f-body); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+h2 { font: 700 1.15rem/1.2 var(--f-display); margin: 0; }
+textarea, input[type="text"] {
+  width: 100%; font: 0.95rem/1.6 var(--f-math); color: var(--ink); background: var(--field);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+textarea { resize: vertical; min-height: 8.5rem; }
+textarea:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
+.hint code { font-family: var(--f-math); font-size: 0.82rem; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+button { font: 700 0.9rem/1 var(--f-body); border-radius: 8px; padding: 10px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--field); color: var(--ink); }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--sky); color: var(--accent-ink); border-color: #bcd5ef; }
+button.primary:hover { background: #d3e5f7; border-color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.err { color: var(--bad); font-size: 0.9rem; margin: 0; min-height: 1.35em; }
+.note { font-size: 0.9rem; margin: 0; min-height: 1.35em; color: var(--muted); }
+.note.bad { color: var(--bad); }
+.note.ok { color: var(--good); }
+
+/* status chip */
+.benchhead { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font: 700 0.8rem/1 var(--f-body); padding: 6px 10px; border-radius: 999px; background: var(--field); color: var(--muted); }
+.chip.rref { background: var(--mint); }
+.chip.reff { background: var(--sky); }
+.chip.ref { background: var(--butter); }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.chip.ref { color: var(--warn); }
+.chip.reff { color: var(--accent); }
+.chip.rref { color: var(--good); }
+
+/* matrix */
+.matscroll { overflow-x: auto; padding: 4px 2px 8px; }
+.matrix { display: inline-grid; position: relative; font-family: var(--f-math); font-variant-numeric: tabular-nums; font-size: 1.15rem; }
+.matrix .cell { padding: 8px 14px; text-align: right; display: flex; align-items: center; justify-content: flex-end; min-height: 3rem; z-index: 1; }
+.matrix .rl { font: 700 0.85rem/1 var(--f-body); color: var(--muted); padding-right: 14px; justify-content: flex-start; }
+.matrix .vh { font: 600 0.85rem/1 var(--f-math); color: var(--muted); min-height: 0; padding-bottom: 6px; justify-content: center; }
+.matrix .aug { border-left: 2px dashed var(--line); }
+.matrix .hi { background: var(--hi); }
+.matrix .brk { position: relative; pointer-events: none; z-index: 2; }
+.matrix .brk::before, .matrix .brk::after { content: ""; position: absolute; top: 0; bottom: 0; width: 9px; border: 2px solid var(--ink); }
+.matrix .brk::before { left: 0; border-right: none; }
+.matrix .brk::after { right: 0; border-left: none; }
+.frac { display: inline-flex; align-items: center; gap: 1px; }
+.frac .fr { display: inline-flex; flex-direction: column; align-items: center; font-size: 0.78em; line-height: 1.05; }
+.frac .fr span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 2px 1px; }
+.frac .fr span:last-child { padding: 1px 2px 0; }
+.matrix.small { font-size: 0.82rem; }
+.matrix.small .cell { padding: 3px 9px; min-height: 0; }
+.matrix.small .rl { font-size: 0.72rem; padding-right: 8px; }
+.matrix.small .brk::before, .matrix.small .brk::after { width: 6px; border-width: 1.5px; }
+
+/* op entry */
+.opform { display: flex; gap: 8px; flex-wrap: wrap; }
+.opform input { flex: 1 1 14rem; min-width: 0; font-size: 1.05rem; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; }
+.ex { font: 400 0.82rem/1 var(--f-math); background: var(--butter); border: 1px solid transparent; padding: 7px 10px; }
+.ex b { font-family: var(--f-body); font-weight: 700; color: var(--muted); margin-right: 6px; font-size: 0.75rem; }
+
+/* solution */
+.solution { background: var(--mint); border: 1px solid #cfe7d9; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.solution .vals { display: flex; flex-wrap: wrap; gap: 8px 22px; font: 600 1.1rem/1.4 var(--f-math); }
+
+/* step log */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; counter-reset: step -1; }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--field); }
+.steps li::before { content: counter(step); font: 600 0.8rem/1 var(--f-math); color: var(--muted); }
+.steps li:first-child::before { content: "—"; }
+.steps li.current { border-color: var(--accent); }
+.steps .op { font: 600 0.95rem/1.3 var(--f-math); }
+.steps .stepbody { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.steps .stepbody .matscroll { padding: 0; }
+.steps button { font-size: 0.78rem; padding: 6px 9px; }
+@media (max-width: 520px) {
+  .steps li { grid-template-columns: 1.6rem minmax(0, 1fr); }
+  .steps li button { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .matrix .hi { animation: mark 0.5s ease-out; }
+  @keyframes mark { from { background: transparent; } }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="/Interactive/">← All MAM103X projects</a>
+    <h1>Row Echelon Workbench</h1>
+    <p>Turn a linear system into its augmented matrix, then row-reduce it yourself with operations like <code style="font-family:var(--f-math)">R2 -&gt; R2 - 2R1</code>. Arithmetic stays exact, in fractions.</p>
+  </header>
+
+  <div class="layout">
+    <section class="panel p-input" aria-labelledby="h-input">
+      <span class="label">Step 1</span>
+      <h2 id="h-input">Your system</h2>
+      <label for="src" class="hint">One equation per line. Or paste a matrix, using <code>|</code> before the constants.</label>
+      <textarea id="src" spellcheck="false">3x + 2y - z = 11
+2x - 3y + z = 7
+5x + y - 2z = 12</textarea>
+      <div class="row">
+        <button class="primary" id="build" type="button">Build matrix</button>
+        <button id="loadMatrix" type="button">Use matrix example</button>
+      </div>
+      <p class="err" id="buildErr" role="alert"></p>
+      <div class="hint">
+        <p class="hint" style="margin-bottom:6px"><b>Row operation syntax</b></p>
+        <p class="hint">Swap: <code>R1 &lt;-&gt; R2</code></p>
+        <p class="hint">Scale: <code>R1 -&gt; (1/3)R1</code></p>
+        <p class="hint">Replace: <code>R2 -&gt; R2 - 2/3R1</code></p>
+        <p class="hint">Combine: <code>R3 -&gt; 3R3 - 5R1</code></p>
+        <p class="hint" style="margin-top:6px"><code>→</code>, <code>=</code> and <code>↔</code> work too. <code>R1 -&gt; R2</code> is read as a swap.</p>
+      </div>
+    </section>
+
+    <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+      <section class="panel p-bench" aria-labelledby="h-bench">
+        <div class="benchhead">
+          <div>
+            <span class="label">Step 2</span>
+            <h2 id="h-bench">Augmented matrix</h2>
+          </div>
+          <span class="chip" id="status">Not in echelon form</span>
+        </div>
+        <div class="matscroll"><div id="matrix"></div></div>
+
+        <form class="opform" id="opform" autocomplete="off">
+          <label for="op" class="label" style="flex-basis:100%">Row operation</label>
+          <input type="text" id="op" placeholder="R2 -> R2 - (2/3)R1" spellcheck="false">
+          <button class="primary" type="submit">Apply</button>
+        </form>
+        <div class="examples" aria-label="Insert an example operation">
+          <button type="button" class="ex" data-op="R1 <-> R2"><b>swap</b>R1 ↔ R2</button>
+          <button type="button" class="ex" data-op="R1 -> (1/3)R1"><b>scale</b>R1 → ⅓R1</button>
+          <button type="button" class="ex" data-op="R2 -> R2 - 2R1"><b>replace</b>R2 → R2 − 2R1</button>
+        </div>
+        <p class="note" id="note" aria-live="polite"></p>
+        <div class="row">
+          <button type="button" id="hint">Suggest next step</button>
+          <button type="button" id="undo">Undo</button>
+          <button type="button" id="reset">Start over</button>
+          <span style="flex:1"></span>
+          <button type="button" id="autoRef">Reduce to REF</button>
+          <button type="button" id="autoRref">Reduce to RREF</button>
+        </div>
+        <div class="solution" id="solution" hidden></div>
+      </section>
+
+      <section class="panel p-steps" aria-labelledby="h-steps">
+        <span class="label">Working</span>
+        <h2 id="h-steps">Steps</h2>
+        <p class="hint">Each operation and the matrix it produced. Go back to any step to branch from there.</p>
+        <ol class="steps" id="steps"></ol>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- exact rationals ---------- */
+const babs = x => (x < 0n ? -x : x);
+function gcd(a, b) { a = babs(a); b = babs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+class Q {
+  constructor(n, d = 1n) {
+    if (d === 0n) throw new Error("Division by zero.");
+    if (d < 0n) { n = -n; d = -d; }
+    const g = gcd(n, d) || 1n;
+    this.n = n / g; this.d = d / g;
+  }
+  add(o) { return new Q(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { return new Q(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { return new Q(this.n * o.n, this.d * o.d); }
+  div(o) { if (o.n === 0n) throw new Error("Division by zero."); return new Q(this.n * o.d, this.d * o.n); }
+  neg() { return new Q(-this.n, this.d); }
+  isZero() { return this.n === 0n; }
+  isOne() { return this.n === 1n && this.d === 1n; }
+  absIsOne() { return babs(this.n) === 1n && this.d === 1n; }
+  toString() { return this.d === 1n ? `${this.n}` : `${this.n}/${this.d}`; }
+}
+const ZERO = new Q(0n), ONE = new Q(1n);
+
+function parseNum(s) {
+  s = s.trim();
+  if (s.includes("/")) {
+    const [a, b, ...rest] = s.split("/");
+    if (rest.length || a === "" || b === "") throw new Error(`"${s}" isn't a number.`);
+    return parseNum(a).div(parseNum(b));
+  }
+  if (!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(s)) throw new Error(`"${s}" isn't a number.`);
+  const neg = s[0] === "-";
+  s = s.replace(/^[+-]/, "");
+  const [i, f = ""] = s.split(".");
+  return new Q((neg ? -1n : 1n) * BigInt((i || "0") + f), 10n ** BigInt(f.length));
+}
+
+/* ---------- parsing the system ---------- */
+const clean = s => s.replace(/[−–—]/g, "-").replace(/[·×]/g, "*");
+
+function parseSide(str, lineNo) {
+  const s = clean(str).replace(/\s+/g, "").replace(/[()]/g, "");
+  if (!s) throw new Error(`Line ${lineNo}: one side of the equation is empty.`);
+  const terms = s.match(/[+-]?[^+-]+/g) || [];
+  if (terms.join("") !== s) throw new Error(`Line ${lineNo}: check the signs in "${str.trim()}".`);
+  const coefs = new Map(); let constant = ZERO;
+  for (const t of terms) {
+    const m = t.match(/^([+-]?)((?:\d*\.?\d+|\d+\.)(?:\/(?:\d*\.?\d+))?)?\*?([a-zA-Z][a-zA-Z0-9_]*)?$/);
+    if (!m || (!m[2] && !m[3])) throw new Error(`Line ${lineNo}: couldn't read the term "${t}".`);
+    let c = m[2] ? parseNum(m[2]) : ONE;
+    if (m[1] === "-") c = c.neg();
+    if (m[3]) coefs.set(m[3], (coefs.get(m[3]) || ZERO).add(c));
+    else constant = constant.add(c);
+  }
+  return { coefs, constant };
+}
+
+function orderVars(vars) {
+  const pref = "xyzw";
+  if (vars.every(v => pref.includes(v))) return vars.sort((a, b) => pref.indexOf(a) - pref.indexOf(b));
+  const m = vars.map(v => v.match(/^([a-zA-Z]+)_?(\d+)$/));
+  if (m.every(x => x && x[1] === m[0][1])) return vars.sort((a, b) => +a.match(/\d+$/)[0] - +b.match(/\d+$/)[0]);
+  return vars.sort();
+}
+
+function parseSystem(text) {
+  const lines = text.split(/\n/).map(l => l.replace(/^\s*#+\s*/, "").trim()).filter(Boolean);
+  if (!lines.length) throw new Error("Type at least one equation.");
+  if (lines.some(l => l.includes("="))) {
+    const eqs = lines.map((l, i) => {
+      const parts = l.split("=");
+      if (parts.length !== 2) throw new Error(`Line ${i + 1}: an equation needs exactly one "=".`);
+      const L = parseSide(parts[0], i + 1), R = parseSide(parts[1], i + 1);
+      const coefs = new Map(L.coefs);
+      for (const [v, c] of R.coefs) coefs.set(v, (coefs.get(v) || ZERO).sub(c));
+      return { coefs, rhs: R.constant.sub(L.constant) };
+    });
+    const set = new Set(); eqs.forEach(e => e.coefs.forEach((_, v) => set.add(v)));
+    if (!set.size) throw new Error("No variables found. Write terms like 3x or -2y.");
+    const vars = orderVars([...set]);
+    const M = eqs.map(e => [...vars.map(v => e.coefs.get(v) || ZERO), e.rhs]);
+    return { M, vars };
+  }
+  // matrix input
+  const rows = lines.map((l, i) => {
+    const s = clean(l).replace(/[\[\]]/g, " ");
+    const [left, right, extra] = s.split("|");
+    if (extra !== undefined) throw new Error(`Row ${i + 1}: use only one "|".`);
+    const nums = left.trim().split(/[\s,;]+/).filter(Boolean).map(parseNum);
+    if (right !== undefined) {
+      const r = right.trim().split(/[\s,;]+/).filter(Boolean).map(parseNum);
+      if (r.length !== 1) throw new Error(`Row ${i + 1}: put exactly one number after "|".`);
+      nums.push(r[0]);
+    }
+    if (nums.length < 2) throw new Error(`Row ${i + 1}: a row needs at least one coefficient and a constant.`);
+    return nums;
+  });
+  const w = rows[0].length;
+  rows.forEach((r, i) => { if (r.length !== w) throw new Error(`Row ${i + 1} has ${r.length} entries but row 1 has ${w}.`); });
+  const n = w - 1;
+  const vars = n <= 4 ? "xyzw".slice(0, n).split("") : Array.from({ length: n }, (_, i) => `x${i + 1}`);
+  return { M: rows, vars };
+}
+
+/* ---------- row operations ---------- */
+function parseExpr(expr, R) {
+  const s = expr.replace(/[()]/g, "");
+  const terms = s.match(/[+-]?[^+-]+/g) || [];
+  if (!terms.length || terms.join("") !== s) throw new Error("Couldn't read the right-hand side. Try R2 - 2R1.");
+  const coefs = new Map();
+  for (const t of terms) {
+    const m = t.match(/^([+-]?)((?:\d*\.?\d+)(?:\/(?:\d*\.?\d+))?)?\*?r(\d+)(?:\/(\d*\.?\d+))?$/);
+    if (!m) throw new Error(`Couldn't read "${t.toUpperCase()}". Each term should look like 2R1 or (1/3)R2.`);
+    let c = m[2] ? parseNum(m[2]) : ONE;
+    if (m[4]) c = c.div(parseNum(m[4]));
+    if (m[1] === "-") c = c.neg();
+    const k = R(m[3]);
+    coefs.set(k, (coefs.get(k) || ZERO).add(c));
+  }
+  return coefs;
+}
+
+function parseOp(raw, m) {
+  let s = clean(raw).toLowerCase().replace(/\s+/g, "");
+  if (!s) throw new Error("Type an operation, for example R2 -> R2 - 2R1.");
+  s = s.replace(/<->|<=>|↔|⇔|<>/g, "~").replace(/->|→|=>|=/g, ">");
+  const R = i => { const k = +i - 1; if (!(k >= 0 && k < m)) throw new Error(`There is no R${i}. This matrix has rows R1 to R${m}.`); return k; };
+  let mm;
+  if ((mm = s.match(/^r(\d+)~r(\d+)$/))) {
+    const a = R(mm[1]), b = R(mm[2]);
+    if (a === b) throw new Error("Swapping a row with itself changes nothing.");
+    return { type: "swap", a, b };
+  }
+  if (s.includes("~")) throw new Error("A swap looks like R1 <-> R2.");
+  let target = null, expr;
+  if ((mm = s.match(/^r(\d+)>(.+)$/))) { target = R(mm[1]); expr = mm[2]; }
+  else if ((mm = s.match(/^(.+)>r(\d+)$/))) { target = R(mm[2]); expr = mm[1]; }
+  else if (!s.includes(">")) expr = s;
+  else throw new Error("Write the row being changed first, like R2 -> R2 - 2R1.");
+  const coefs = parseExpr(expr, R);
+  if (target === null) target = [...coefs.keys()][0];
+  const tc = coefs.get(target) || ZERO;
+  if (tc.isZero()) {
+    const others = [...coefs].filter(([, c]) => !c.isZero());
+    if (others.length === 1 && others[0][1].isOne())
+      return { type: "swap", a: target, b: others[0][0], note: `Read as R${target + 1} ↔ R${others[0][0] + 1}. Overwriting R${target + 1} outright would lose its equation.` };
+    throw new Error(`R${target + 1} has to stay in its own update with a nonzero multiple, or the step can't be undone. To swap, write R1 <-> R2.`);
+  }
+  for (const [k, c] of [...coefs]) if (c.isZero()) coefs.delete(k);
+  if (coefs.size === 1 && tc.isOne()) throw new Error("That leaves the row unchanged.");
+  return { type: "combo", target, coefs };
+}
+
+function applyOp(M, op) {
+  const N = M.map(r => r.slice());
+  if (op.type === "swap") { [N[op.a], N[op.b]] = [N[op.b], N[op.a]]; return N; }
+  N[op.target] = M[0].map((_, j) => {
+    let v = ZERO;
+    for (const [k, c] of op.coefs) v = v.add(c.mul(M[k][j]));
+    return v;
+  });
+  return N;
+}
+
+function coefText(c, ascii) {
+  if (c.isOne()) return "";
+  return c.d === 1n ? `${c.n}` : ascii ? `(${c})` : `(${c})`;
+}
+function formatOp(op, ascii = false) {
+  if (op.type === "swap") return `R${op.a + 1} ${ascii ? "<->" : "↔"} R${op.b + 1}`;
+  const minus = ascii ? "-" : "−";
+  const entries = [...op.coefs].sort((x, y) => (x[0] === op.target ? -1 : y[0] === op.target ? 1 : x[0] - y[0]));
+  const parts = entries.map(([k, c], i) => {
+    const neg = c.n < 0n, a = neg ? c.neg() : c;
+    const term = `${coefText(a, ascii)}R${k + 1}`;
+    if (i === 0) return (neg ? minus : "") + term;
+    return ` ${neg ? minus : "+"} ${term}`;
+  });
+  return `R${op.target + 1} ${ascii ? "->" : "→"} ${parts.join("")}`;
+}
+
+/* ---------- analysis & automatic reduction ---------- */
+function nextOp(M, nv, rref) {
+  const m = M.length; let r = 0;
+  for (let c = 0; c < nv && r < m; c++) {
+    let p = -1;
+    for (let i = r; i < m; i++) if (!M[i][c].isZero()) { p = i; break; }
+    if (p < 0) continue;
+    if (M[r][c].isZero()) return { type: "swap", a: r, b: p };
+    if (!M[r][c].absIsOne()) {
+      for (let i = r + 1; i < m; i++) if (M[i][c].absIsOne()) return { type: "swap", a: r, b: i };
+    }
+    if (!M[r][c].isOne()) return { type: "combo", target: r, coefs: new Map([[r, ONE.div(M[r][c])]]) };
+    for (let i = r + 1; i < m; i++)
+      if (!M[i][c].isZero()) return { type: "combo", target: i, coefs: new Map([[i, ONE], [r, M[i][c].neg()]]) };
+    if (rref) for (let i = 0; i < r; i++)
+      if (!M[i][c].isZero()) return { type: "combo", target: i, coefs: new Map([[i, ONE], [r, M[i][c].neg()]]) };
+    r++;
+  }
+  return null;
+}
+
+function analyze(M, nv) {
+  const leads = M.map(row => { const j = row.findIndex(v => !v.isZero()); return j < 0 ? Infinity : j; });
+  let echelon = true;
+  for (let i = 1; i < leads.length; i++) {
+    if (leads[i - 1] === Infinity && leads[i] !== Infinity) echelon = false;
+    if (leads[i] !== Infinity && leads[i] <= leads[i - 1]) echelon = false;
+  }
+  const ones = echelon && leads.every((j, i) => j >= nv || M[i][j].isOne());
+  const rref = ones && leads.every((j, i) => j >= nv || M.every((row, k) => k === i || row[j].isZero()));
+  let level = rref ? "rref" : ones ? "ref" : echelon ? "echelon" : "none";
+  return { leads, level };
+}
+
+function solve(M, vars) {
+  const nv = vars.length; let A = M.map(r => r.slice()); let op, guard = 0;
+  while ((op = nextOp(A, nv, true)) && guard++ < 500) A = applyOp(A, op);
+  if (A.some(row => row.slice(0, nv).every(v => v.isZero()) && !row[nv].isZero())) return { kind: "none" };
+  const pivots = [];
+  A.forEach(row => { const j = row.slice(0, nv).findIndex(v => !v.isZero()); if (j >= 0) pivots.push(j); });
+  if (pivots.length < nv) return { kind: "many", free: vars.filter((_, j) => !pivots.includes(j)) };
+  const vals = vars.map((v, j) => A.find(row => row[j].isOne() && row.slice(0, nv).filter(x => !x.isZero()).length === 1)[nv]);
+  return { kind: "one", vals };
+}
+
+/* ---------- UI ---------- */
+if (typeof document !== "undefined") {
+  const $ = id => document.getElementById(id);
+  let state = null;
+  const cur = () => (state.steps.length ? state.steps[state.steps.length - 1].M : state.base);
+
+  const fracHTML = (q, small) => {
+    const neg = q.n < 0n, n = babs(q.n);
+    if (q.d === 1n) return `${neg ? "−" : ""}${n}`;
+    if (small) return `${neg ? "−" : ""}${n}/${q.d}`;
+    return `<span class="frac">${neg ? "<span>−</span>" : ""}<span class="fr"><span>${n}</span><span>${q.d}</span></span></span>`;
+  };
+
+  function matrixHTML(M, vars, changed = [], small = false) {
+    const nv = vars.length, m = M.length;
+    let h = `<div class="matrix${small ? " small" : ""}" style="grid-template-columns:auto repeat(${nv + 1},auto)">`;
+    const head = small ? 0 : 1;
+    if (!small) {
+      vars.forEach((v, j) => h += `<div class="cell vh" style="grid-area:1/${j + 2}">${v}</div>`);
+      h += `<div class="cell vh aug" style="grid-area:1/${nv + 2};border-left-color:transparent">=</div>`;
+    }
+    M.forEach((row, i) => {
+      const hi = changed.includes(i) ? " hi" : "";
+      h += `<div class="cell rl" style="grid-area:${i + 1 + head}/1">R${i + 1}</div>`;
+      row.forEach((v, j) => h += `<div class="cell${j === nv ? " aug" : ""}${hi}" style="grid-area:${i + 1 + head}/${j + 2}">${fracHTML(v, small)}</div>`);
+    });
+    h += `<div class="brk" style="grid-area:${1 + head}/2/${m + 1 + head}/${nv + 3}"></div></div>`;
+    return h;
+  }
+
+  function note(text, kind = "") { const el = $("note"); el.textContent = text; el.className = "note" + (kind ? " " + kind : ""); }
+
+  function render() {
+    const M = cur(), vars = state.vars, nv = vars.length;
+    const last = state.steps[state.steps.length - 1];
+    $("matrix").innerHTML = matrixHTML(M, vars, last ? last.changed : []);
+    const a = analyze(M, nv);
+    const chip = $("status");
+    const labels = { none: "Not in echelon form", echelon: "Echelon form · leading entries not 1", ref: "Row-echelon form", rref: "Reduced row-echelon form" };
+    chip.textContent = labels[a.level];
+    chip.className = "chip " + ({ none: "", echelon: "ref", ref: "reff", rref: "rref" })[a.level];
+    $("undo").disabled = $("reset").disabled = !state.steps.length;
+    $("autoRef").disabled = a.level === "ref" || a.level === "rref";
+    $("autoRref").disabled = a.level === "rref";
+
+    const sol = $("solution");
+    if (a.level === "none") { sol.hidden = true; }
+    else {
+      const s = solve(M, vars);
+      sol.hidden = false;
+      if (s.kind === "none") sol.innerHTML = `<span class="label">Result</span><p style="margin:0">No solution. A row reads 0 = nonzero, so the system is inconsistent.</p>`;
+      else if (s.kind === "many") sol.innerHTML = `<span class="label">Result</span><p style="margin:0">Infinitely many solutions. Free variable${s.free.length > 1 ? "s" : ""}: <b style="font-family:var(--f-math)">${s.free.join(", ")}</b>.</p>`;
+      else sol.innerHTML = `<span class="label">${a.level === "rref" ? "Solution" : "Solution by back-substitution"}</span><div class="vals">${vars.map((v, j) => `<span>${v} = ${fracHTML(s.vals[j])}</span>`).join("")}</div>`;
+    }
+
+    const items = [`<li class="${state.steps.length ? "" : "current"}"><div class="stepbody"><span class="op">Start</span><div class="matscroll">${matrixHTML(state.base, vars, [], true)}</div></div>${state.steps.length ? `<button type="button" data-go="0">Go back here</button>` : ""}</li>`];
+    state.steps.forEach((st, i) => {
+      const isCur = i === state.steps.length - 1;
+      items.push(`<li class="${isCur ? "current" : ""}"><div class="stepbody"><span class="op">${formatOp(st.op)}</span><div class="matscroll">${matrixHTML(st.M, vars, st.changed, true)}</div></div>${isCur ? "" : `<button type="button" data-go="${i + 1}">Go back here</button>`}</li>`);
+    });
+    $("steps").innerHTML = items.join("");
+  }
+
+  function pushOp(op) {
+    const M = applyOp(cur(), op);
+    state.steps.push({ op, M, changed: op.type === "swap" ? [op.a, op.b] : [op.target] });
+  }
+
+  function build() {
+    try {
+      const { M, vars } = parseSystem($("src").value);
+      state = { vars, base: M, steps: [] };
+      $("buildErr").textContent = "";
+      note(`${M.length} equation${M.length > 1 ? "s" : ""}, ${vars.length} unknown${vars.length > 1 ? "s" : ""}: ${vars.join(", ")}.`);
+      render();
+    } catch (e) { $("buildErr").textContent = e.message; }
+  }
+
+  $("build").addEventListener("click", build);
+  $("loadMatrix").addEventListener("click", () => { $("src").value = "3 2 -1 | 11\n2 -3 1 | 7\n5 1 -2 | 12"; build(); });
+  $("opform").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!state) return;
+    try {
+      const op = parseOp($("op").value, cur().length);
+      pushOp(op);
+      $("op").value = "";
+      note(op.note || `Applied ${formatOp(op)}.`, op.note ? "" : "ok");
+      render();
+    } catch (err) { note(err.message, "bad"); }
+  });
+  document.querySelectorAll(".ex").forEach(b => b.addEventListener("click", () => { $("op").value = b.dataset.op; $("op").focus(); }));
+  $("hint").addEventListener("click", () => {
+    const M = cur(), a = analyze(M, state.vars.length);
+    const op = nextOp(M, state.vars.length, a.level === "ref" || a.level === "rref");
+    if (!op) { note("Nothing left to do. The matrix is fully reduced.", "ok"); return; }
+    $("op").value = formatOp(op, true);
+    $("op").focus();
+    note("Suggested step is in the box. Press Apply to use it, or edit it first.");
+  });
+  $("undo").addEventListener("click", () => { state.steps.pop(); note("Undid the last step."); render(); });
+  $("reset").addEventListener("click", () => { state.steps = []; note("Back to the starting matrix."); render(); });
+  function auto(rref) {
+    let op, n = 0;
+    while ((op = nextOp(cur(), state.vars.length, rref)) && n < 200) { pushOp(op); n++; }
+    note(n ? `Added ${n} step${n > 1 ? "s" : ""}. See them in the list below.` : "Already there.", "ok");
+    render();
+  }
+  $("autoRef").addEventListener("click", () => auto(false));
+  $("autoRref").addEventListener("click", () => auto(true));
+  $("steps").addEventListener("click", e => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    state.steps = state.steps.slice(0, +b.dataset.go);
+    note(`Returned to ${+b.dataset.go === 0 ? "the start" : "step " + b.dataset.go}. New operations continue from here.`);
+    render();
+  });
+  build();
+}
+</script>
+</body>
+</html>
