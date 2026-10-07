@@ -210,7 +210,7 @@
       <div class="rail">
         <div class="field">
           <label for="fx">Rate of change</label>
-          <div class="deriv"><span>dy/dx =</span><input id="fx" type="text" spellcheck="false" autocomplete="off" value="y - x^2 + 1"></div>
+          <div class="deriv"><span>dy/dx =</span><input id="fx" type="text" spellcheck="false" autocomplete="off" value="2 - y"></div>
         </div>
         <div class="trio">
           <div class="field"><label for="x0">x&#8320;</label><input id="x0" type="number" step="any" value="0"></div>
@@ -595,6 +595,12 @@
     ctx.strokeStyle = '#E2DAC6';
     ctx.strokeRect(left + 0.5, top + 0.5, right - left - 1, bottom - top - 1);
 
+    /* keep everything plotted inside the frame */
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(left, top, right - left, bottom - top);
+    ctx.clip();
+
     /* slope field */
     if(S.f){
       var cols = Math.max(8, Math.min(22, Math.round((right - left) / 44))),
@@ -684,6 +690,8 @@
       ctx.stroke();
     }
 
+    ctx.restore();
+
     /* hover callout */
     if(S.hover >= 0 && S.hover < shown){
       var hv = S.nodes[S.hover];
@@ -772,26 +780,8 @@
         refCount = Math.max(60, Math.min(4000, n * 40));
     S.ref = (span !== 0) ? rk4(f, x0, y0, span, refCount) : null;
 
-    /* view window */
-    var xs = [x0, last.x], ys = [], i, v;
-    for(i = 0; i < S.nodes.length; i++){ v = S.nodes[i].y; if(isFinite(v) && Math.abs(v) < BIG) ys.push(v); }
-    if(S.ref){
-      var soft = Math.max(Math.abs(y0) * 40 + 40, 1e3);
-      for(i = 0; i < S.ref.pts.length; i++){
-        v = S.ref.pts[i].y;
-        if(isFinite(v) && Math.abs(v) < soft) ys.push(v);
-      }
-    }
-    if(!ys.length) ys = [y0, y0 + 1];
-    var ymin = Math.min.apply(null, ys), ymax = Math.max.apply(null, ys),
-        xmin = Math.min(xs[0], xs[1]), xmax = Math.max(xs[0], xs[1]);
-    if(xmax - xmin < 1e-9){ xmin -= 0.5; xmax += 0.5; }
-    if(ymax - ymin < 1e-9){ ymin -= 1; ymax += 1; }
-    var padY = (ymax - ymin) * 0.12, padX = (xmax - xmin) * 0.04;
-    /* keep the origin at the centre of the plot */
-    var rx = Math.max(Math.abs(xmin - padX), Math.abs(xmax + padX)),
-        ry = Math.max(Math.abs(ymin - padY), Math.abs(ymax + padY));
-    S.view = { xmin:-rx, xmax:rx, ymin:-ry, ymax:ry };
+    /* fixed view window, centred on the origin */
+    S.view = { xmin:-10, xmax:10, ymin:-10, ymax:10 };
 
     /* readouts */
     var refEnd = refAt(S.ref, last.x),

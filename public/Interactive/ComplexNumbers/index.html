@@ -13,11 +13,9 @@
 <style>
 :root{
   color-scheme:light;
-  /* light ivory paper with pastel tints */
+  /* light ivory paper */
   --paper:#FBF7EC; --sheet:#FFFDF7; --ink:#2F2A23; --ink-2:#6C6354; --rule:#E7DECB; --grid:#EEE7D7;
   --z:#4E6FB2; --sol:#B5587E; --tgt:#3E8E80; --ok:#3B8468; --soft:#F3EDDE;
-  --tint-blue:#E7EDF8; --tint-rose:#FAE9EF; --tint-mint:#E4F1ED; --tint-lilac:#F0EBF8;
-  --wash-1:rgba(176,199,236,.30); --wash-2:rgba(234,197,214,.28); --wash-3:rgba(186,222,212,.22);
   --serif:"Literata", Georgia, "Times New Roman", serif;
   --sans:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   box-sizing:border-box;
@@ -27,14 +25,8 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.7;
-  background-image:
-    radial-gradient(900px 520px at 10% -6%, var(--wash-1), transparent 70%),
-    radial-gradient(760px 480px at 96% 6%, var(--wash-2), transparent 70%),
-    radial-gradient(700px 500px at 50% 104%, var(--wash-3), transparent 70%),
-    linear-gradient(var(--grid) 1px,transparent 1px),
-    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:auto,auto,auto,28px 28px,28px 28px;
-  background-attachment:fixed,fixed,fixed,scroll,scroll;}
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
 main{max-width:760px;margin:0 auto;padding:48px 20px 96px}
 h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,44px);line-height:1.15;margin:0 0 8px;letter-spacing:-0.01em}
 h2{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.3;margin:56px 0 12px}
@@ -43,8 +35,6 @@ p{margin:0 0 14px}
 .lede{font-family:var(--sans);color:var(--ink-2);font-size:17px;margin-bottom:28px}
 .sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:20px 22px;margin:18px 0;
   box-shadow:0 1px 2px rgba(120,104,72,.05),0 8px 24px -16px rgba(120,104,72,.18)}
-.sheet.part:nth-of-type(odd){background:linear-gradient(180deg,var(--tint-blue),var(--sheet) 120px)}
-.sheet.part:nth-of-type(even){background:linear-gradient(180deg,var(--tint-rose),var(--sheet) 120px)}
 button{font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:6px 12px;cursor:pointer}
 button:hover{border-color:var(--ink-2)}
 button:focus-visible,svg:focus-visible,a:focus-visible{outline:2px solid var(--z);outline-offset:2px}
@@ -83,7 +73,6 @@ nav.toc a{color:var(--z);text-decoration:none}
 nav.toc a:hover{text-decoration:underline}
 
 /* ---- Plot complex numbers ---- */
-.plotter{background:linear-gradient(180deg,var(--tint-mint),var(--sheet) 160px)}
 .plotter h2{margin:0 0 6px}
 .plotter .lede{margin-bottom:16px}
 .ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;font-family:var(--sans);font-size:15px}
@@ -97,14 +86,14 @@ nav.toc a:hover{text-decoration:underline}
 .nstep button{padding:2px 9px;line-height:1.4}
 .nstep output{font-variant-numeric:tabular-nums;min-width:14px;text-align:center;font-weight:500}
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.presets button{font-size:14px;padding:4px 10px;background:var(--tint-lilac)}
+.presets button{font-size:14px;padding:4px 10px}
 .facts{font-family:var(--sans);font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink-2);
   display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:4px 18px;margin:12px 0 4px}
 .facts b{color:var(--ink);font-weight:500}
 .sollist{list-style:none;padding:0;margin:10px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:8px}
 .sollist button{display:block;width:100%;text-align:left;font-size:14px;line-height:1.45;padding:7px 10px;
-  background:var(--tint-rose);font-variant-numeric:tabular-nums}
-.sollist button[aria-pressed="true"]{border-color:var(--sol);color:var(--ink)}
+  font-variant-numeric:tabular-nums}
+.sollist button[aria-pressed="true"]{border-color:var(--sol);color:var(--ink);background:var(--soft)}
 .sollist .kk{color:var(--sol);font-weight:600}
 .sollist .pol{display:block;color:var(--ink-2);font-size:13px}
 .check{font-family:var(--sans);font-size:15px;font-variant-numeric:tabular-nums;margin:12px 0 0;color:var(--ok);min-height:23px}
