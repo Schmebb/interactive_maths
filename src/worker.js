@@ -9,10 +9,11 @@
 
 import { DurableObject } from "cloudflare:workers";
 
-// SHA-256 of the admin password. To change it, run:
+// The admin password's SHA-256 lives in the ADMIN_PASSWORD_SHA256 secret, not in this file.
+// To set or change it, run:
 //   echo -n "newpassword" | shasum -a 256
-// and paste the hex here.
-const ADMIN_PASSWORD_SHA256 = "5d9cf088e5139c926c5af1f4da663bf337f2fb7ce8602df7b32b28509fe3cb57";
+//   npx wrangler secret put ADMIN_PASSWORD_SHA256     (paste the hex when asked)
+// For `wrangler dev`, put ADMIN_PASSWORD_SHA256=<hex> in .dev.vars instead.
 
 const DAY = 86400000;
 const TZ_OFFSET = 2 * 3600000; // days are counted in South African time (UTC+2, no DST)
@@ -113,8 +114,8 @@ async function sha256Hex(text) {
 async function stats(request, env, url) {
   const auth = request.headers.get("authorization") || "";
   const given = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  const a = await sha256Hex(given), b = ADMIN_PASSWORD_SHA256;
-  let diff = 0;
+  const a = await sha256Hex(given), b = env.ADMIN_PASSWORD_SHA256 || "";
+  let diff = b.length === 64 ? 0 : 1; // no secret set -> always locked
   for (let i = 0; i < b.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   if (diff) {
     await new Promise(r => setTimeout(r, 600)); // slow down guessing
